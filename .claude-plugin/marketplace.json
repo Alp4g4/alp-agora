@@ -1,0 +1,11 @@
+{
+  "name": "alp-agora",
+  "owner": { "name": "Alpaga" },
+  "plugins": [
+    {
+      "name": "golang",
+      "source": "./plugins/golang",
+      "description": "Go skills (clean architecture, ...)"
+    }
+  ]
+}
