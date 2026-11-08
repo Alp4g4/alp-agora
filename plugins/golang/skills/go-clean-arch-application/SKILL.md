@@ -23,6 +23,7 @@ infrastructure/presenters → application → domain
 - **Ports**: interfaces defined here and implemented in infrastructure. Every port has exactly one method. They come in two flavors:
   - **Repositories**: persistence of an aggregate, collection-like (`userGetter`, `userUpdater`, `userDeleter`), signatures use domain entities.
   - **External services (gateways)**: a capability owned by someone else, action-like (`paymentCharger`, `emailSender`, `passwordHasher`). Signatures may use small use-case-specific types.
+  - **Output ports (optional)**: a presenter interface the use case calls to hand out its result (`userCreatedPresenter`). Only for streaming or multiple outputs, see "Returning a result or presenting it?".
 - **Input and output types**: plain structs for what a use case receives and returns, when the domain entity is not the right shape.
 - **Application errors**: failures that are not business rules (`ErrNotFound`, `ErrConflict`, `ErrUnauthorized`), wrapped with `%w` so callers can use `errors.Is` / `errors.As`.
 - **Orchestration and transaction boundaries**: the order of steps, and which steps must succeed or fail together. A transaction is exposed through a port (a transaction manager or unit of work), never through `*sql.Tx`.
@@ -64,7 +65,8 @@ infrastructure/presenters → application → domain
 8. **The use case supplies time and IDs; the domain never generates them.** Time comes from a `Clock` port, so tests can pin it, and is passed to the domain as an argument (in UTC). IDs may be generated directly in the use case (`uuid.New()`) without a port, then passed to the domain.
 9. **Call domain methods for rules, assign plain fields directly.** If a domain method exists for the change (`order.Cancel()`, `user.ChangeEmail(e)`), the use case must call it rather than setting the fields. If no rule exists (`user.AvatarKey = &key`), assign directly and do not invent a method.
 10. **Keep the happy path linear.** Load, call the domain, save, then side effects. Return errors early, wrapped with context (`fmt.Errorf("loading order: %w", err)`).
-11. **Test with fakes of the ports.** Use cases are unit-tested with in-memory implementations or generated mocks, with no database and no network.
+11. **Return the result by default; present through an output port only when returning is not enough.** `Execute` returns the entity or an output struct, plus an `error`. Add an output port only for streaming, progressive results, or several outputs from one use case. When unsure, return: switching later is a contained change.
+12. **Test with fakes of the ports.** Use cases are unit-tested with in-memory implementations or generated mocks, with no database and no network.
 
 ## Use case or domain?
 
@@ -76,6 +78,46 @@ infrastructure/presenters → application → domain
 | assigns a plain field with no rule | use case |
 
 If two use cases would need the same `if`, it is a domain rule.
+
+## Returning a result or presenting it?
+
+**Default: return the result.** The use case hands back its result and the caller decides how to show it:
+
+```go
+func (uc *CreateUserUC) Execute(ctx context.Context, input CreateUserInput) (user.User, error)
+```
+
+This is idiomatic Go, reads linearly, and is tested by asserting on the return value. The use case knows nothing about how its result is displayed.
+
+**Optional: an output port (presenter interface).** Use one only when returning cannot express the flow:
+
+- the use case produces several outputs over time (streaming, progress)
+- the same use case feeds several output channels at once
+- the use case must decide when, and how many times, to emit a result
+
+If none of these apply, do not add the port.
+
+When used, it follows the same rules as any port:
+
+```go
+// create_user.go, level 1: unexported, one method, named after what it presents
+type userCreatedPresenter interface {
+	PresentUserCreated(ctx context.Context, u user.User)
+}
+```
+
+- **No return value.** A repository returns data because the use case needs it. A presenter is fire-and-forget: data goes outward and nothing comes back.
+- **The parameter** is the entity, or a use-case-specific output struct when the result is more than one entity (computed fields, several entities).
+- **Errors still go through `Execute`'s `error` return.** A separate `PresentError` port is possible, as its own one-method interface, but the return value is the usual choice.
+- **The implementation is stateful** (it holds the result), so build one per request. A shared instance is unsafe under concurrency.
+
+| | Return the result | Output port |
+|---|---|---|
+| Who controls the output | the caller, after the call | the use case, during the call |
+| Number of outputs | exactly one | zero, one, or many |
+| State | none | the presenter holds the result |
+| Tests | assert on the return value | needs a fake presenter |
+| Extra code | none | one port and one implementation per use case |
 
 ## Suggested layout
 
