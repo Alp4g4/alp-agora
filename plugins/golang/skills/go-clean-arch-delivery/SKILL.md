@@ -101,6 +101,12 @@ internal/
 
 Group by mechanism (`http`, `cli`, `worker`), then by app when several binaries use the same mechanism. A helper needed by two apps goes in a small package named after what it does (`output`, `exitcode`), created only when the second copy appears. Each `main` wires only the use cases its entry points call.
 
+## References
+
+Complete examples calling the `user` use cases from `go-clean-arch-application`:
+
+- `references/delivery-cli-example.md`: an `admin` CLI with `create-user` and `update-user` commands, one-method use case interfaces, flag shape checks, a presenter function, error to exit code mapping in one place, and tests with fake use cases.
+
 ## Quick check
 
 Before adding code to delivery, ask:

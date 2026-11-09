@@ -3,7 +3,7 @@
 `internal/infrastructure/bcrypthasher/password_hasher.go`. It implements two one-method ports from the application layer:
 
 - `passwordHasher` (`Hash`), declared in `usecase/user/ports.go`.
-- A second port for checking a password at login (for example `passwordComparer`), declared by the login use case. It is separate from `passwordHasher`, because a port has exactly one method.
+- A second port for checking a password at login (`passwordVerifier`), declared by the login use case. It is separate from `passwordHasher`, because a port has exactly one method.
 
 The ports are unexported, so this package cannot name them and no `var _ ... = ` check is possible. The compiler checks the contract when `main` passes `*Hasher` to the use case constructors.
 

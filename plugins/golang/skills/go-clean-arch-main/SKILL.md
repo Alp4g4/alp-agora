@@ -136,6 +136,10 @@ func NewApp(cfg Config, logger *slog.Logger) (*App, error) {
 12. **Do not factor out wiring too early.** Duplicate the wiring between two binaries until the second copy appears, then extract the shared part into a package named after what it builds.
 13. **Test the root.** Test `NewApp` with a test configuration, and `App.Run` by cancelling its context. A wiring mistake should fail in a test, not in production.
 
+## References
+
+- `references/main-cli-example.md`: the `cmd/admin` binary wiring the JSON file store and the bcrypt hasher into the user use cases and the CLI from `go-clean-arch-delivery`, with `Run(ctx, args) int` instead of a server, logs on stderr, and a test of the real wiring.
+
 ## Quick check
 
 Before adding code to `main`, ask:
