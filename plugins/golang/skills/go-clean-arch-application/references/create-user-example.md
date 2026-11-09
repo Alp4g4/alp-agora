@@ -1,6 +1,6 @@
 # Create User use case
 
-`internal/application/usecase/user/create_user.go`. Raw input (strings from the presenter) is turned into domain value objects at the start of `Execute`. After that, the flow trusts them: it never re-validates an `Email` or a `Password`.
+`internal/application/usecase/user/create_user.go`. Raw input (strings from the delivery layer) is turned into domain value objects at the start of `Execute`. After that, the flow trusts them: it never re-validates an `Email` or a `Password`.
 
 Ports used only here are defined in this file (level 1): `userSaver`. The shared ones (`passwordHasher`, `avatarStorer`, `userEmailChecker`) are in `ports.go`, see `user-port-example.md`.
 

@@ -10,11 +10,11 @@ The application layer sits between the domain and the outside world. It describe
 ## Dependency rule
 
 ```
-infrastructure/presenters → application → domain
+infrastructure/delivery → application → domain
 ```
 
-- The application imports the **domain** and the Go standard library. It never imports infrastructure or presenters.
-- Infrastructure and presenters import the application, to implement its ports and to call its use cases.
+- The application imports the **domain** and the Go standard library. It never imports infrastructure or delivery.
+- Infrastructure imports the application to implement its ports, and delivery imports it to call its use cases.
 - The application defines the interfaces it needs (ports). Infrastructure implements them.
 
 ## Must contain
@@ -33,7 +33,7 @@ infrastructure/presenters → application → domain
 - **Business rules.** A rule that must hold for every use case belongs to the domain. If a use case contains an `if` on a business invariant (a status check, a limit, a state transition), move it to the domain.
 - **Infrastructure code.** No SQL, ORM, HTTP clients, queue clients, file system access, or environment variables.
 - **Concrete implementations of ports.** `PostgresUserRepository` and `BcryptPasswordHasher` live in infrastructure.
-- **Transport concerns.** No `http.Request`, `gin.Context`, gRPC types, status codes, or `json:` / `db:` tags. Presenters map to and from transport models.
+- **Transport concerns.** No `http.Request`, `gin.Context`, gRPC types, status codes, or `json:` / `db:` tags. Delivery maps to and from transport models.
 - **Presentation logic.** No formatting for display, no HTML or response building.
 - **Framework or driver types.** No `*sql.DB`, `*sql.Tx`, or third-party clients in use case signatures or fields.
 

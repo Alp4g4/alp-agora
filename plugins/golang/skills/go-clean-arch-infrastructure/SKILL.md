@@ -14,7 +14,7 @@ infrastructure → application → domain
 ```
 
 - Infrastructure imports the **application** (its ports and application errors) and the **domain** (entities and value objects used in port signatures).
-- Infrastructure never imports presenters, and presenters never import infrastructure. Only the composition root (`main`) knows both.
+- Infrastructure never imports delivery, and delivery never imports infrastructure. Only the composition root (`main`) knows both.
 - The application never imports infrastructure. It only sees the ports.
 
 ## Must contain
@@ -32,7 +32,7 @@ infrastructure → application → domain
 - **Business rules.** No status checks, limits, or state transitions. Infrastructure stores and fetches what it is given. If an `if` expresses a business invariant, it belongs to the domain.
 - **Use case orchestration.** No calling several ports in sequence to achieve an intent, no calling use cases. Sequencing is the use case's job.
 - **Port definitions.** The interfaces the application consumes are defined in the application layer. Infrastructure may declare small unexported interfaces for its own driver dependencies, never for the application.
-- **Transport or presentation logic.** No HTTP handlers, routing, request parsing, response building, or status codes. That is the presenters.
+- **Transport or presentation logic.** No HTTP handlers, routing, request parsing, response building, or status codes. That is the delivery layer.
 - **Leaked driver types.** No `*sql.Rows`, `*sql.Tx`, driver errors, or persistence models in the return values of a port method. Only domain types, application types, and primitives cross the boundary.
 - **Tags or storage details on domain types.** The domain stays free of `db:` and `json:` tags. Mapping is done here.
 
