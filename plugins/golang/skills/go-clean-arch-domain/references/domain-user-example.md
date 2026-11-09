@@ -118,7 +118,7 @@ var (
 
 ## What stays out of this package
 
-- `UserRepository` interface: application layer, next to the use cases.
-- Password hashing and comparison: a `PasswordHasher` port (`Hash(Password) (PasswordHash, error)`, `Compare(PasswordHash, string) bool`) defined in the application layer, implemented with bcrypt or argon2 in infrastructure. The domain only defines the `PasswordHash` type.
+- Persistence ports (`userGetter`, `userUpdater`, ...): application layer, next to the use cases, one method each.
+- Password hashing and verification: two one-method ports defined in the application layer, `passwordHasher` (`Hash(ctx, Password) (PasswordHash, error)`) and `passwordVerifier` (`Verify(ctx, PasswordHash, string) (bool, error)`). One bcrypt or argon2 type in infrastructure implements both. The domain only defines the `PasswordHash` type.
 - `json:` / `db:` tags and the mapping to API or storage models: outer layers.
 - Loading the user, calling `ChangeEmail`, saving it, sending the verification email: the `ChangeUserEmail` use case.
