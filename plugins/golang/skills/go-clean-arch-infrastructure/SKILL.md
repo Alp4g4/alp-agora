@@ -45,15 +45,15 @@ infrastructure → application → domain
    ```go
    // Same field names, same order, same types as user.User. Only the tags differ.
    type userModel struct {
-   	ID              uuid.UUID            `db:"id"`
-   	Email           user.Email     `db:"email"`
-   	EmailVerifiedAt *time.Time           `db:"email_verified_at"`
+   	ID              uuid.UUID         `db:"id"`
+   	Email           user.Email        `db:"email"`
+   	EmailVerifiedAt *time.Time        `db:"email_verified_at"`
    	PasswordHash    user.PasswordHash `db:"password_hash"`
-   	AvatarKey       *string              `db:"avatar_key"`
+   	AvatarKey       *string           `db:"avatar_key"`
    }
 
    u := user.User(model) // model → entity
-   m := userModel(u)           // entity → model
+   m := userModel(u)     // entity → model
    ```
    Go ignores struct tags in a conversion, but requires the same field names, order, and types. So the model uses the domain's own types (`user.Email`, not `string`). The benefit is a compile-time guarantee: if a field is added, removed, renamed, or retyped in the entity, the conversion stops compiling and points straight at the model to update. A hand-written mapper would silently keep compiling.
    Write a mapper (`toDomain` / `fromDomain`) only when a cast cannot work: the storage shape differs (flattened value object such as `Money` as amount and currency columns, JSON column, joined or denormalized data), a field needs a different type (time stored as an integer), or the driver cannot scan the domain type. Keep the mapper next to the model and explain in a comment why a cast was not possible.
@@ -93,6 +93,7 @@ Complete examples implementing the ports of the `user` use cases from `go-clean-
 
 - `references/infrastructure-jsonfile-example.md`: a JSON file `UserStore` satisfying several one-method ports, a model cast to the entity, error translation, and the mapper fallback.
 - `references/infrastructure-bcrypt-hasher-example.md`: a `Hasher` building a `PasswordHash` from a `Password`, with configuration passed through the constructor.
+- `references/infrastructure-localfs-avatar-example.md`: an `AvatarStore` copying avatar files into a directory, one type satisfying a level 2 port and a level 1 port.
 
 ## Quick check
 

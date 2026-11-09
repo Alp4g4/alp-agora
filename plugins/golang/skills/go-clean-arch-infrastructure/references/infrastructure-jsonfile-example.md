@@ -29,11 +29,11 @@ import (
 
 // Same shape as user.User: the cast works. Only the json tags are specific to the file.
 type userModel struct {
-	ID              uuid.UUID               `json:"id"`
+	ID              uuid.UUID         `json:"id"`
 	Email           user.Email        `json:"email"`
-	EmailVerifiedAt *time.Time              `json:"email_verified_at"`
+	EmailVerifiedAt *time.Time        `json:"email_verified_at"`
 	PasswordHash    user.PasswordHash `json:"password_hash"`
-	AvatarKey       *string                 `json:"avatar_key"`
+	AvatarKey       *string           `json:"avatar_key"`
 }
 ```
 
@@ -48,6 +48,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sync"
 	"uuid"
 
@@ -184,6 +185,11 @@ func (s *UserStore) load() ([]userModel, error) {
 func (s *UserStore) write(models []userModel) error {
 	data, err := json.MarshalIndent(models, "", "  ")
 	if err != nil {
+		return err
+	}
+
+	// the store owns its file, so it creates the directory on the first write
+	if err := os.MkdirAll(filepath.Dir(s.path), 0o700); err != nil {
 		return err
 	}
 

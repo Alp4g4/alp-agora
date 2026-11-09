@@ -114,7 +114,7 @@ func newLogger(cfg Config) *slog.Logger {
 
 ## app.go
 
-`localfs.AvatarStore` is not shown in the references. It implements `avatarStorer` and `avatarDeleter` by copying files into a directory.
+The three infrastructure types come from the `go-clean-arch-infrastructure` references: `jsonfile.UserStore`, `bcrypthasher.Hasher`, and `localfs.AvatarStore`.
 
 ```go
 package main
@@ -205,8 +205,9 @@ import (
 func TestApp(t *testing.T) {
 	dir := t.TempDir()
 	cfg := Config{
-		UsersFile:  filepath.Join(dir, "users.json"),
-		AvatarDir:  filepath.Join(dir, "avatars"),
+		// nested paths that do not exist yet, as on a fresh machine
+		UsersFile:  filepath.Join(dir, "data", "users.json"),
+		AvatarDir:  filepath.Join(dir, "data", "avatars"),
 		BcryptCost: 4,
 	}
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))

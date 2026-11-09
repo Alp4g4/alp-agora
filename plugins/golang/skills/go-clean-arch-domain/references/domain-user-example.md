@@ -110,8 +110,8 @@ package user
 import "errors"
 
 var (
-	ErrInvalidEmail   = errors.New("invalid email")
-	ErrEmailUnchanged = errors.New("new email is the same as the current one")
+	ErrInvalidEmail     = errors.New("invalid email")
+	ErrEmailUnchanged   = errors.New("new email is the same as the current one")
 	ErrPasswordTooShort = errors.New("password is too short")
 )
 ```
