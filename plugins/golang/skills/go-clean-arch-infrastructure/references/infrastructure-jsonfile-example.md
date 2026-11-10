@@ -34,6 +34,8 @@ type userModel struct {
 	EmailVerifiedAt *time.Time        `json:"email_verified_at"`
 	PasswordHash    user.PasswordHash `json:"password_hash"`
 	AvatarKey       *string           `json:"avatar_key"`
+	CreatedAt       time.Time         `json:"created_at"`
+	UpdatedAt       time.Time         `json:"updated_at"`
 }
 ```
 
@@ -213,6 +215,8 @@ type userModel struct {
 	EmailVerifiedAt *int64  `json:"email_verified_at"` // Unix seconds
 	PasswordHash    string  `json:"password_hash"`
 	AvatarKey       *string `json:"avatar_key"`
+	CreatedAt       int64   `json:"created_at"` // Unix seconds
+	UpdatedAt       int64   `json:"updated_at"` // Unix seconds
 }
 
 func toEntity(m userModel) (user.User, error) {
@@ -233,6 +237,8 @@ func toEntity(m userModel) (user.User, error) {
 		EmailVerifiedAt: verifiedAt,
 		PasswordHash:    user.PasswordHash(m.PasswordHash),
 		AvatarKey:       m.AvatarKey,
+		CreatedAt:       time.Unix(m.CreatedAt, 0).UTC(),
+		UpdatedAt:       time.Unix(m.UpdatedAt, 0).UTC(),
 	}, nil
 }
 ```

@@ -114,7 +114,7 @@ func newLogger(cfg Config) *slog.Logger {
 
 ## app.go
 
-The three infrastructure types come from the `go-clean-arch-infrastructure` references: `jsonfile.UserStore`, `bcrypthasher.Hasher`, and `localfs.AvatarStore`.
+The three infrastructure types come from the `go-clean-arch-infrastructure` references: `jsonfile.UserStore`, `bcrypthasher.Hasher`, `localfs.AvatarStore`, and `system.Clock`.
 
 ```go
 package main
@@ -129,6 +129,7 @@ import (
 	"internal/infrastructure/bcrypthasher"
 	"internal/infrastructure/jsonfile"
 	"internal/infrastructure/localfs"
+	"internal/infrastructure/system"
 )
 
 type UseCases struct {
@@ -149,12 +150,13 @@ func NewApp(cfg Config, logger *slog.Logger) (*App, error) {
 	users := jsonfile.NewUserStore(cfg.UsersFile)
 	hasher := bcrypthasher.NewHasherWithCost(cfg.BcryptCost)
 	avatars := localfs.NewAvatarStore(cfg.AvatarDir)
+	clk := system.NewClock()
 
 	// 2. use cases: one store satisfies several one-method ports, so it is
 	// passed once per port. The compiler checks each port here.
 	useCases := UseCases{
-		CreateUser: usecaseuser.NewCreateUserUC(users, users, hasher, avatars),
-		UpdateUser: usecaseuser.NewUpdateUserUC(users, users, users, hasher, avatars),
+		CreateUser: usecaseuser.NewCreateUserUC(users, users, hasher, avatars, clk),
+		UpdateUser: usecaseuser.NewUpdateUserUC(users, users, users, hasher, avatars, clk),
 	}
 
 	// 3. delivery: the CLI receives only the use cases it calls

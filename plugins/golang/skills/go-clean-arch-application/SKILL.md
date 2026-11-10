@@ -63,7 +63,7 @@ infrastructure/delivery → application → domain
    When a port signature needs a struct parameter (too many arguments for a plain list), the struct lives next to the port, exported: in the use case package for levels 1 and 2, in the capability package for level 3. Infrastructure imports that package for the struct. Name it after what it is (`UserSearch`, `Page`), not after the method. If the fields form a business concept (an address, a period), it is a value object in the domain instead.
 6. **`context.Context` is the first parameter** of every use case method and every port method that does I/O.
 7. **Validate at the boundary.** At the start of the use case, turn raw input into domain value objects (`ParseEmail`, `ParsePassword`). From then on, the rest of the flow trusts them.
-8. **The use case supplies time and IDs; the domain never generates them.** Time comes from a `Clock` port, so tests can pin it, and is passed to the domain as an argument (in UTC). IDs may be generated directly in the use case (`uuid.New()`) without a port, then passed to the domain.
+8. **The use case supplies time and IDs; the domain never generates them.** Time comes from a `Clock` port, so tests can pin it, and is passed to the domain as an argument (in UTC). IDs may be generated directly in the use case without a port, then passed to the domain. Use UUID v7 (`uuid.NewV7()`): it starts with its creation time, so database indexes stay compact. It returns an error, which the use case wraps and returns.
 9. **Call domain methods for rules, assign plain fields directly.** If a domain method exists for the change (`order.Cancel()`, `user.ChangeEmail(e)`), the use case must call it rather than setting the fields. If no rule exists (`user.AvatarKey = &key`), assign directly and do not invent a method.
 10. **Keep the happy path linear.** Load, call the domain, save, then side effects. Return errors early, wrapped with context (`fmt.Errorf("loading order: %w", err)`).
 11. **Return the result by default; present through an output port only when returning is not enough.** `Execute` returns the entity or an output struct, plus an `error`. Add an output port only for streaming, progressive results, or several outputs from one use case. When unsure, return: switching later is a contained change.
@@ -154,6 +154,7 @@ Start at level 1. Promote a port to level 2 when a second use case of the same c
 
 Complete examples built on the domain `user` package from `go-clean-arch-domain`:
 
+- `references/clock-port-example.md`: a level 3 port in its capability package, `application/ports/clock`, used by both user use cases.
 - `references/user-port-example.md`: level 2 shared ports (`passwordHasher`, `avatarStorer`, `userEmailChecker`) and application errors.
 - `references/create-user-example.md`: `CreateUser`, with input parsed into `Email` and `Password` at the boundary and level 1 ports.
 - `references/update-user-example.md`: `UpdateUser`, calling `ChangeEmail` for the rule and assigning plain fields directly, with a composite port.

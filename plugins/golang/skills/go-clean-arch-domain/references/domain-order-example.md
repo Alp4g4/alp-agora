@@ -18,6 +18,7 @@ type Order struct {
 	Items     []Item
 	Status    Status
 	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type Item struct {

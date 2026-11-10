@@ -10,10 +10,10 @@ The domain is the innermost layer. It holds the business concepts and rules, and
 ## Dependency rule
 
 ```
-infrastructure → application → domain
+infrastructure/delivery → application → domain
 ```
 
-- The domain imports **nothing** from the application or infrastructure layers.
+- The domain imports **nothing** from the application or infrastructure/delivery layers.
 - Imports allowed in the domain: the Go standard library (`errors`, `fmt`, `time`, `strings`, ...) and other domain packages.
 - Third-party imports are the exception. If one seems needed, the logic probably belongs in another layer.
 

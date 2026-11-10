@@ -5,7 +5,7 @@
 - **Email**: a business rule exists (a new email must be verified again), so the use case calls `u.ChangeEmail(email)` and never sets `u.Email` itself.
 - **Password hash and avatar key**: plain data with no rule, assigned directly.
 
-Ports used only here are defined in this file (level 1): `userFinder`, `userUpdater`, `avatarDeleter`, and the composite `avatarStorerDeleter`, which embeds `avatarStorer` (from `ports.go`) and `avatarDeleter`. The composite name joins the roles of the embedded ports.
+Ports used only here are defined in this file (level 1): `userFinder`, `userUpdater`, `avatarDeleter`, and the composite `avatarStorerDeleter`, which embeds `avatarStorer` (from `ports.go`) and `avatarDeleter`. The composite name joins the roles of the embedded ports. The clock is a level 3 port, `clock.Clock`, see `clock-port-example.md`.
 
 ## update_user.go
 
@@ -18,6 +18,7 @@ import (
 	"strings"
 	"uuid"
 
+	"internal/application/ports/clock"
 	"internal/domain/user"
 )
 
@@ -44,15 +45,17 @@ type UpdateUserUC struct {
 	userEmailChecker userEmailChecker
 	passwordHasher   passwordHasher
 	avatarStore      avatarStorerDeleter
+	clock            clock.Clock
 }
 
-func NewUpdateUserUC(finder userFinder, updater userUpdater, emailChecker userEmailChecker, hasher passwordHasher, avatars avatarStorerDeleter) *UpdateUserUC {
+func NewUpdateUserUC(finder userFinder, updater userUpdater, emailChecker userEmailChecker, hasher passwordHasher, avatars avatarStorerDeleter, clk clock.Clock) *UpdateUserUC {
 	return &UpdateUserUC{
 		userFinder:       finder,
 		userUpdater:      updater,
 		userEmailChecker: emailChecker,
 		passwordHasher:   hasher,
 		avatarStore:      avatars,
+		clock:            clk,
 	}
 }
 
@@ -140,6 +143,8 @@ func (uc *UpdateUserUC) Execute(ctx context.Context, input UpdateUserInput) (use
 		newAvatarKey = &key
 		u.AvatarKey = newAvatarKey
 	}
+
+	u.UpdatedAt = uc.clock.Now()
 
 	if err := uc.userUpdater.Update(ctx, u); err != nil {
 		if newAvatarKey != nil {

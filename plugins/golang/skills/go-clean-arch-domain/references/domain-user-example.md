@@ -19,6 +19,8 @@ type User struct {
 	EmailVerifiedAt *time.Time
 	PasswordHash    PasswordHash
 	AvatarKey       *string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 // ChangeEmail carries a business rule (a new email must be verified again),
@@ -36,6 +38,8 @@ func (u *User) ChangeEmail(newEmail Email) error {
 `ChangeEmail` does not re-validate `newEmail`: the caller obtained it from `ParseEmail`, which is the single validation point. Never write `Email(rawString)` directly.
 
 Not in the domain: `u.AvatarKey = &key`. Plain data without a rule is assigned directly by the use case.
+
+`CreatedAt` and `UpdatedAt` are plain fields too. The use case sets them from its clock: the domain never reads the current time, so `ChangeEmail` does not touch `UpdatedAt`.
 
 ## email.go
 

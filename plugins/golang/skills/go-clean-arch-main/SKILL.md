@@ -85,11 +85,12 @@ func NewApp(cfg Config, logger *slog.Logger) (*App, error) {
 	// 1. infrastructure
 	users := jsonfile.NewUserStore(cfg.UsersFile)
 	hasher := bcrypthasher.NewHasher()
+	clk := system.NewClock()
 
 	// 2. use cases
 	useCases := UseCases{
-		CreateUser: usecaseuser.NewCreateUserUC(users, users, hasher, avatars),
-		UpdateUser: usecaseuser.NewUpdateUserUC(users, users, users, hasher, avatars),
+		CreateUser: usecaseuser.NewCreateUserUC(users, users, hasher, avatars, clk),
+		UpdateUser: usecaseuser.NewUpdateUserUC(users, users, users, hasher, avatars, clk),
 	}
 
 	// 3. delivery: each adapter receives only the use cases it calls
