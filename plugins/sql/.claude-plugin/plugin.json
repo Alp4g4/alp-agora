@@ -1,0 +1,5 @@
+{
+  "name": "sql",
+  "description": "SQL skills (schema design, migrations, queries with sqlc, ...)",
+  "version": "0.1.0"
+}

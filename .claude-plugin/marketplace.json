@@ -6,6 +6,11 @@
       "name": "golang",
       "source": "./plugins/golang",
       "description": "Go skills (clean architecture, ...)"
+    },
+    {
+      "name": "sql",
+      "source": "./plugins/sql",
+      "description": "SQL skills (schema design, migrations, queries with sqlc, ...)"
     }
   ]
 }
