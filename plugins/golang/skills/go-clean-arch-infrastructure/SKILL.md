@@ -62,7 +62,7 @@ infrastructure → application → domain
 6. **Take dependencies and configuration through the constructor.** `NewUserStore(db *sql.DB)`. Do not read environment variables, parse config files, or use globals inside infrastructure code. Loading config is the composition root's job.
 7. **Carry transactions through `context.Context`.** The transaction port starts a transaction and stores it in the context. Repository methods look it up and use it when present, otherwise use the plain connection. This keeps `*sql.Tx` out of the application layer.
 8. **Honor the context.** Every port method takes `ctx` first, and passes it to the driver so cancellation and deadlines work.
-9. **Check the contract at compile time.** For ports exported from `application/ports`, add `var _ ports.Clock = (*SystemClock)(nil)`. Unexported ports in `usecase` packages cannot be named from outside, so the check happens when the composition root wires the types together.
+9. **Check the contract at compile time.** For ports exported from a capability package in `application/ports/<capability>`, add `var _ clock.Clock = (*SystemClock)(nil)`. Unexported ports in `usecase` packages cannot be named from outside, so the check happens when the composition root wires the types together.
 10. **Group by technology, not by port.** One package per driver (`postgres`, `smtp`, `bcrypthasher`), mirroring the domain concepts inside it.
 11. **Test against the real technology.** Verify repositories with integration tests on a real database (a container), and clients against a real or recorded service. A mock of the driver proves nothing about the SQL.
 
@@ -82,7 +82,7 @@ internal/
     ├── smtp/
     │   └── email_sender.go
     └── system/
-        └── clock.go             # implements ports.Clock
+        └── clock.go             # implements clock.Clock (application/ports/clock)
 ```
 
 The composition root (`cmd/<app>/main.go`) builds the concrete types and passes them to the use case constructors. It is the only place where application and infrastructure meet.

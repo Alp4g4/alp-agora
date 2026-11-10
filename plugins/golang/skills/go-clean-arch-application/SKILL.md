@@ -58,8 +58,9 @@ infrastructure/delivery → application → domain
    }
    ```
    Do not create a catch-all `UserRepository`: it hides what a use case really needs. A use case depends on the narrowest port that covers its needs (`userUpdater` if it only updates, `userGetUpdater` if it loads then updates). Infrastructure implements the methods on one struct, which satisfies every port and composite at once.
-4. **Ports in `usecase` packages are unexported.** Interfaces in `usecase/<concept>/` (levels 1 and 2) start with a lowercase letter, so they are private to the package and cannot be depended on from outside. Only the interfaces in `application/ports/` (level 3) are exported, because other packages must name them.
+4. **Ports in `usecase` packages are unexported.** Interfaces in `usecase/<concept>/` (levels 1 and 2) start with a lowercase letter, so they are private to the package and cannot be depended on from outside. Only the interfaces in `application/ports/<capability>/` packages (level 3) are exported, because other packages must name them.
 5. **Define each port at the narrowest level where it is used**, and promote it only when a second consumer appears (see Suggested layout). Never add a port "just in case".
+   When a port signature needs a struct parameter (too many arguments for a plain list), the struct lives next to the port, exported: in the use case package for levels 1 and 2, in the capability package for level 3. Infrastructure imports that package for the struct. Name it after what it is (`UserSearch`, `Page`), not after the method. If the fields form a business concept (an address, a period), it is a value object in the domain instead.
 6. **`context.Context` is the first parameter** of every use case method and every port method that does I/O.
 7. **Validate at the boundary.** At the start of the use case, turn raw input into domain value objects (`ParseEmail`, `ParsePassword`). From then on, the rest of the flow trusts them.
 8. **The use case supplies time and IDs; the domain never generates them.** Time comes from a `Clock` port, so tests can pin it, and is passed to the domain as an argument (in UTC). IDs may be generated directly in the use case (`uuid.New()`) without a port, then passed to the domain.
@@ -124,9 +125,11 @@ type userCreatedPresenter interface {
 ```
 internal/
 └── application/
-    ├── ports/                      # level 3: shared across entities
-    │   ├── clock.go                # Clock (exported)
-    │   └── storage.go              # Transactor (exported)
+    ├── ports/                      # level 3: one package per capability, never flat
+    │   ├── clock/
+    │   │   └── clock.go            # clock.Clock (exported)
+    │   └── tx/
+    │       └── runner.go           # tx.Runner (exported)
     └── usecase/
         ├── user/
         │   ├── ports.go            # level 2: shared by user use cases (userGetter, userUpdater, userGetUpdater)
@@ -143,7 +146,7 @@ Use cases are grouped by business concept, mirroring the domain packages. Ports 
 
 1. **Use case**: defined in the use case file, used only by that use case (`register_user.go`). Unexported.
 2. **Entity**: in `usecase/<concept>/ports.go`, shared by several use cases of the same concept. Unexported.
-3. **Cross use case**: in `application/ports/`, small interfaces shared across concepts (clock, transaction runner). Exported. Keep this package small: it is not a dumping ground.
+3. **Cross use case**: in `application/ports/<capability>/`, one package per capability, named after what it provides (`ports/clock` with `clock.Clock`, `ports/tx` with `tx.Runner`). Exported. Never put every shared interface in one flat `ports` package: a Go package name says what it provides, a flat `ports` package becomes a dumping ground, and every consumer imports everything in it.
 
 Start at level 1. Promote a port to level 2 when a second use case of the same concept needs it, and to level 3 when a second concept needs it.
 
