@@ -16,7 +16,7 @@ The rules of `sql-schema` applied to PostgreSQL.
 | closed set of values | `text` | `CREATE TYPE ... AS ENUM`, a `CHECK` |
 | payload never searched | `jsonb` | `json` |
 
-- **`timestamptz` does not store a time zone.** It stores an instant in UTC and converts on input and output using the session time zone. The application already passes UTC, so set the connection's `TimeZone` to `UTC` to read back exactly what was written.
+- **`timestamptz` does not store a time zone.** It stores an instant in UTC and converts on input and output using the session time zone. The application already passes UTC. The Go driver `pgx` still returns values in the machine's local time zone, whatever the session's `TimeZone`: configure it to scan in UTC (see `go-sql-queries`, `references/postgres.md`).
 - **Identifiers are at most 63 characters.** Longer names are silently truncated, which matters for constraint names built from several columns.
 - **Reserved words** include `user`, `order`, `group`, `table`, `column`, `default`, `limit`, `offset`, `end`. The full list is in the PostgreSQL documentation, appendix "SQL Key Words": any word marked reserved there needs another name.
 
@@ -61,10 +61,11 @@ CREATE TABLE customer_order (
         FOREIGN KEY (user_account_id) REFERENCES user_account (id) ON DELETE RESTRICT
 );
 
--- "orders of a user, newest first": equality column, then sort column.
--- It also serves the foreign key: user_account_id is its leftmost column.
-CREATE INDEX idx_customer_order_user_account_id_created_at
-    ON customer_order (user_account_id, created_at);
+-- "orders of a user, newest first", paginated: equality column, then the sort
+-- columns, ending with id as the keyset does. It also serves the foreign key:
+-- user_account_id is its leftmost column.
+CREATE INDEX idx_customer_order_user_account_id_created_at_id
+    ON customer_order (user_account_id, created_at, id);
 
 CREATE TABLE order_item (
     id                uuid        NOT NULL,
@@ -89,7 +90,7 @@ No `CHECK` on `status`, `quantity`, `unit_price_minor`, or `currency`: `ParseMon
 
 ## Indexes specific to PostgreSQL
 
-- **Foreign keys are not indexed automatically.** Add the index yourself, or make the foreign key the leftmost column of a composite index, as `idx_customer_order_user_account_id_created_at` does.
+- **Foreign keys are not indexed automatically.** Add the index yourself, or make the foreign key the leftmost column of a composite index, as `idx_customer_order_user_account_id_created_at_id` does.
 - **Partial index** for a query that always filters on the same condition: `CREATE INDEX idx_customer_order_pending_created_at ON customer_order (created_at) WHERE status = 'pending';`. It is smaller and faster than a full index.
 - **Expression index** for a query on a computed value, such as `lower(name)`. The query must use the same expression. Prefer normalizing the value in the domain, so a plain index is enough.
 - **Create indexes concurrently on a table in use** (`CREATE INDEX CONCURRENTLY`), so writes are not blocked. That is a migration concern, see `sql-migrations`.
