@@ -94,6 +94,7 @@ internal/
     ├── cli/
     │   ├── admin/               # commands of the admin binary
     │   └── ops/                 # commands of the ops binary
+    ├── web/                     # server-rendered pages (go-ssr-templ)
     ├── graphql/
     ├── worker/
     └── cron/
