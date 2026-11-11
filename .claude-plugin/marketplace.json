@@ -11,6 +11,11 @@
       "name": "sql",
       "source": "./plugins/sql",
       "description": "SQL skills (schema design, migrations, queries with sqlc, ...)"
+    },
+    {
+      "name": "web",
+      "source": "./plugins/web",
+      "description": "Web skills (UI design, theme, accessibility, ...)"
     }
   ]
 }
