@@ -11,11 +11,12 @@
 #
 #   ---
 #   id: PROJ-142              # required. Uppercase key + number, must equal the file name.
-#                             #   → branch (proj-142-…), commit prefix, PR title.
+#                             #   → the branch name must contain it (proj-142, feat/PROJ-142-…),
+#                             #     commit prefix, PR title.
 #   repo: https://github.com/org/my-api   # required. URL of the remote git repository
 #                             #   (https://…, git@host:owner/name.git or ssh://…).
 #                             #   → the agent only works in a clone whose "origin" is this repository.
-#   base: main                # optional, default main. Checked against the remote by setup-repo.sh.
+#   base: main                # optional, default main.
 #                             #   → branch to start from and target of the PR.
 #   stack: go, go-sql         # required. A comma-separated list of components:
 #                             #     go      Go clean architecture (always, for a Go project)
@@ -137,7 +138,7 @@ fi
 # base (optional, default main)
 [ -z "$base" ] && base="main"
 
-# repo: URL of the remote repository (the match with the local clone is checked by setup-repo.sh)
+# repo: URL of the remote repository (the match with the local clone is checked by the senior-dev agent)
 if [ -z "$repo" ]; then err "repo: required (URL of the remote repository, e.g. https://github.com/org/my-api)"
 elif ! echo "$repo" | grep -Eq '^(https://[^/[:space:]]+/[^/[:space:]]+/[^/[:space:]]+/?|git@[^:[:space:]]+:[^/[:space:]]+/[^/[:space:]]+|ssh://([^@/]+@)?[^/[:space:]]+/[^/[:space:]]+/[^/[:space:]]+)$'; then
   err "repo: '$repo' is not a repository URL (https://host/owner/name, git@host:owner/name.git or ssh://…)"

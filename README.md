@@ -9,7 +9,7 @@ A Claude Code marketplace of skills and agents that hold how I work: the rules, 
 | `go` | Skills for Go applications: clean architecture, SQL with sqlc and goose, server-rendered pages with templ and htmx, and the definition of done of a Go change |
 | `web-design` | A skill for the UI and UX of web interfaces built with Tailwind CSS, not tied to a language |
 | `specs` | The shared formats of the agents: the tech spec template and its validator. Agents that write or read a spec install it |
-| `dev-agent` | `senior-dev`, an agent that implements a ticket in its own worktree, opens a pull request, and handles the review rounds. It never merges |
+| `dev-agent` | `senior-dev`, an agent that implements a tech spec on a branch you prepared, opens a pull request, and handles the review rounds. It never merges |
 
 ### Skills
 
@@ -25,7 +25,7 @@ A Claude Code marketplace of skills and agents that hold how I work: the rules, 
 
 | Agent | Started with |
 |---|---|
-| `dev-agent:senior-dev` | `bin/dev implement <ticket>` or `bin/dev review <PR URL>`, see `plugins/dev-agent/README.md` |
+| `dev-agent:senior-dev` | `claude --agent dev-agent:senior-dev "implement tech-specs/FND-111.md"` or `"review <PR URL>"`, see `plugins/dev-agent/README.md` |
 
 ## Install
 
@@ -58,7 +58,7 @@ plugins/<plugin>/
 - **A skill stands alone.** It never requires another plugin. Skills of the same plugin may point to each other by name.
 - **`SKILL.md` routes, the files hold the rules.** It stays short and tells which file to read for a task, so a task loads only what it needs. Every other file is linked directly from it.
 - **Examples compile.** Code in `references/` is tested before it is published.
-- **Checks are scripts.** What a command can verify (the dependency rule, a ticket's format, `make check`) is a script, not an instruction.
+- **Checks are scripts.** What a command can verify (the dependency rule, a tech spec's format, `make check`) is a script, not an instruction.
 
 ## Checking the marketplace
 

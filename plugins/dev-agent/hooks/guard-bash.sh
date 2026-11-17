@@ -18,7 +18,7 @@ block() { echo "Blocked by senior-dev guard: $1" >&2; exit 2; }
 
 # git push targeting main/master (e.g. "git push origin main", "git push origin HEAD:main")
 if echo "$cmd" | grep -Eq 'git[[:space:]]+push([^|;&]*)[[:space:]:](main|master)([[:space:]]|$|;|&|\|)'; then
-  block "pushing to main/master is not allowed. Push your ticket branch instead."
+  block "pushing to main/master is not allowed. Push your tech spec branch instead."
 fi
 
 # force-push without lease (--force-with-lease is allowed)
