@@ -32,19 +32,39 @@ The agent then does the rest, in order: validates the tech spec with `validate-t
 
 ## Run it
 
-From the root of the target repo, on the tech spec's branch:
+The agent runs without you, in non-interactive mode. From the root of the target repo, on the tech spec's branch:
 
 ```sh
-claude --agent dev-agent:senior-dev "implement tech-specs/FND-111.md"
-claude --agent dev-agent:senior-dev "review https://github.com/org/repo/pull/12"   # on the PR's branch
+claude -p --agent dev-agent:senior-dev --output-format json "implement tech-specs/FND-111.md"
+claude -p --agent dev-agent:senior-dev --output-format json "review https://github.com/org/repo/pull/12"   # on the PR's branch
+```
+
+Every run ends with one JSON object as the agent's final message (the `result` field of the JSON output, next to `session_id`):
+
+```json
+{"status": "need_inputs", "mode": "implement", "id": "FND-111",
+ "summary": "Plan written in PLAN.md: ...", "questions": ["Do you approve the plan in PLAN.md?"],
+ "plan": "PLAN.md", "pr_url": null, "error": null}
+```
+
+| `status`      | Meaning | What you do |
+|---------------|---------|-------------|
+| `succeeded`   | PR opened (implement) or review round pushed (review): `pr_url` | review the PR |
+| `need_inputs` | the agent needs an answer: invalid or unclear tech spec, dependency not merged, plan approval: `questions` | answer by resuming the session |
+| `failed`      | the agent can't do the job: wrong repository or branch, missing plugin or skill, stuck: `error` | fix the cause, run it again |
+
+To answer a `need_inputs`, resume the same session:
+
+```sh
+claude -p --agent dev-agent:senior-dev --output-format json --resume <session_id> "Plan approved."
 ```
 
 Tech specs live in the `tech-specs/` folder of each project. Format, the purpose of each field, and an example: `validate-tech-spec.sh --help`. To check a tech spec by hand: `validate-tech-spec.sh tech-specs/FND-111.md`.
 
-Add `PLAN.md` to the repo's `.gitignore` or `.git/info/exclude`: the agent writes its plan there and never commits it.
+The agent never commits `PLAN.md` (where it writes its plan) or anything in `tech-specs/`. Adding `PLAN.md` to the repo's `.gitignore` or `.git/info/exclude` keeps it out of `git status` too.
 
 ## Tuning as trust grows
 
 - Remove the "Plan approval" paragraph in `senior-dev.md` to let it run end to end.
-- Add `--permission-mode acceptEdits` to the `claude` command to cut down permission prompts. A `permissionMode` field in the agent's frontmatter would be ignored: plugin agents don't support it.
+- In non-interactive mode nobody can accept a permission prompt: a tool call that needs one is denied. Give the run the permissions it needs on the `claude` command (`--permission-mode acceptEdits` plus `--allowedTools` for `git`, `gh`, `make` and your toolchain, or the repo's `.claude/settings.json`). A `permissionMode` field in the agent's frontmatter would be ignored: plugin agents don't support it.
 - Track the number of review rounds per PR. That's your quality metric.
