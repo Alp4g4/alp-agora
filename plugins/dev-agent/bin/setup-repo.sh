@@ -1,14 +1,14 @@
 #!/bin/bash
 # setup-repo.sh: prepares an isolated git worktree for a ticket, up to date with its base branch.
 #
-# Usage:   setup-repo.sh <repo-url> <base> <branch>
-#            repo-url the ticket's repo (from validate-ticket.sh): the "origin" remote of the clone
+# Usage:   setup-repo.sh <repo-url> <base> <id>
+#            repo-url the ticket's repo (from validate-tech-spec.sh): the "origin" remote of the clone
 #                     you are running in must point to it (https and ssh forms are equivalent)
 #            base     the ticket's base branch (e.g. main)
-#            branch   <id lowercase>-<short-description>, e.g. proj-142-healthz-endpoint
+#            id       the ticket's id, e.g. PROJ-142: the branch is the id in lowercase (proj-142)
 # Success: exit 0, prints key=value lines:
 #            worktree=<path>   folder where ALL the work happens
-#            branch=<name>
+#            branch=<name>     the id in lowercase
 #            base_ref=<ref>    what the branch was created from (origin/<base>)
 #            status=created|reused
 #            behind=<n>        commits the branch is behind base_ref (only when reused)
@@ -21,8 +21,8 @@ set -euo pipefail
 
 die() { echo "setup-repo: $*" >&2; exit 1; }
 
-[ $# -eq 3 ] || { sed -n '4,8p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
-repo="$1"; base="$2"; branch="$3"
+[ $# -eq 3 ] || { sed -n "4,8p" "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
+repo="$1"; base="$2"; id="$3"
 
 # --- Right repository? --------------------------------------------------------
 # normalize a git URL to host/owner/name: https://github.com/Org/Api.git, git@github.com:org/api,
@@ -40,8 +40,8 @@ root="$(cd "$(git rev-parse --git-common-dir)/.." && pwd -P)"
 cd "$root"
 
 # --- Branch name ---------------------------------------------------------------
-echo "$branch" | grep -Eq '^[a-z][a-z0-9]*-[0-9]+(-[a-z0-9]+)+$' || \
-  die "branch '$branch' must look like proj-142-short-description (lowercase id, then words separated by -)"
+echo "$id" | grep -Eq '^[A-Z][A-Z0-9]*-[0-9]+$' || die "id '$id' must look like PROJ-142"
+branch="$(echo "$id" | tr 'A-Z' 'a-z')"
 
 # --- Fetch -----------------------------------------------------------------------
 git fetch --quiet origin || die "git fetch origin failed"

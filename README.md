@@ -8,6 +8,7 @@ A Claude Code marketplace of skills and agents that hold how I work: the rules, 
 |---|---|
 | `go` | Skills for Go applications: clean architecture, SQL with sqlc and goose, server-rendered pages with templ and htmx, and the definition of done of a Go change |
 | `web-design` | A skill for the UI and UX of web interfaces built with Tailwind CSS, not tied to a language |
+| `specs` | The shared formats of the agents: the tech spec template and its validator. Agents that write or read a spec install it |
 | `dev-agent` | `senior-dev`, an agent that implements a ticket in its own worktree, opens a pull request, and handles the review rounds. It never merges |
 
 ### Skills
@@ -32,6 +33,7 @@ A Claude Code marketplace of skills and agents that hold how I work: the rules, 
 /plugin marketplace add Alp4g4/alp-agora
 /plugin install go@alp-agora
 /plugin install web-design@alp-agora
+/plugin install specs@alp-agora
 /plugin install dev-agent@alp-agora
 ```
 

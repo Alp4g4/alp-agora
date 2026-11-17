@@ -1,13 +1,13 @@
 #!/bin/bash
-# validate-ticket.sh: checks that a ticket file follows the format below.
+# validate-tech-spec.sh: checks that a tech spec file follows the format below.
 #
-# Usage:   validate-ticket.sh <tickets/PROJ-142.md>
-#          validate-ticket.sh --help
-# Success: exit 0, prints the metadata as key=value lines (id, repo, base, stack, type, acceptance_criteria).
+# Usage:   validate-tech-spec.sh <tech-specs/PROJ-142.md>
+#          validate-tech-spec.sh --help
+# Success: exit 0, prints the metadata as key=value lines (id, repo, base, stack, type, story, depends_on, acceptance_criteria).
 # Failure: exit 1, prints every error at once on stderr.
 #
-# ── Ticket format ─────────────────────────────────────────────────────────────
-# One markdown file per ticket, named <id>.md, in the tickets/ folder of the project.
+# ── Tech spec format ─────────────────────────────────────────────────────────────
+# One markdown file per tech spec, named <id>.md, in the tech-specs/ folder of the project.
 #
 #   ---
 #   id: PROJ-142              # required. Uppercase key + number, must equal the file name.
@@ -19,8 +19,8 @@
 #                             #   → branch to start from and target of the PR.
 #   stack: go, go-sql         # required. A comma-separated list of components:
 #                             #     go      Go clean architecture (always, for a Go project)
-#                             #     go-sql  the ticket touches the schema, a migration or a query
-#                             #     go-ssr  the ticket touches a server-rendered page
+#                             #     go-sql  the tech spec touches the schema, a migration or a query
+#                             #     go-ssr  the tech spec touches a server-rendered page
 #                             #   go-sql and go-ssr come with go.
 #                             #   → which skills and checks the agent uses (never guessed).
 #   type: bug                 # required. feature | bug | refactor | chore
@@ -29,6 +29,8 @@
 #                             #     bug      first a failing test that reproduces the bug, then the fix
 #                             #     refactor no behaviour change, existing tests pass unmodified
 #                             #     chore    no new tests required, all checks must pass
+#   story: PROD-12            # optional. The product spec (story) this tech spec comes from.
+#   depends_on: PROJ-141      # optional. Comma-separated ids of tech specs to deliver first.
 #   ---
 #
 #   ## Context                # required, not empty. Why the work exists.
@@ -59,8 +61,8 @@ if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
 fi
 
 file="${1:-}"
-[ -z "$file" ] && { echo "usage: $0 <ticket.md>" >&2; exit 2; }
-[ -f "$file" ] || { echo "ticket not found: $file" >&2; exit 1; }
+[ -z "$file" ] && { echo "usage: $0 <tech-spec.md>" >&2; exit 2; }
+[ -f "$file" ] || { echo "tech spec not found: $file" >&2; exit 1; }
 
 errors=()
 err() { errors+=("$1"); }
@@ -70,7 +72,7 @@ err() { errors+=("$1"); }
 fm=$(awk 'NR==1{next} /^---[[:space:]]*$/{exit} {print}' "$file")
 body=$(awk 'f>=2{print} /^---[[:space:]]*$/{f++}' "$file")
 
-id=""; repo=""; base=""; stack=""; type=""
+id=""; repo=""; base=""; stack=""; type=""; story=""; depends_on=""
 while IFS= read -r line; do
   line="${line%%#*}"                                   # strip comments
   line="$(echo "$line" | sed -E 's/[[:space:]]+$//')"
@@ -80,7 +82,8 @@ while IFS= read -r line; do
   case "$key" in
     id) id="$val" ;; repo) repo="$val" ;; base) base="$val" ;;
     stack) stack="$val" ;; type) type="$val" ;;
-    *) err "unknown field '$key' (allowed: id, repo, base, stack, type)" ;;
+    story) story="$val" ;; depends_on) depends_on="$val" ;;
+    *) err "unknown field '$key' (allowed: id, repo, base, stack, type, story, depends_on)" ;;
   esac
 done <<< "$fm"
 
@@ -122,6 +125,19 @@ case "$type" in
   *)  err "type: '$type' is unknown (feature | bug | refactor | chore)" ;;
 esac
 
+# depends_on (optional): comma-separated ids, never itself
+if [ -n "$depends_on" ]; then
+  deps=()
+  IFS=',' read -ra parts <<< "$depends_on"
+  for d in "${parts[@]}"; do
+    d="$(echo "$d" | tr -d '[:space:]')"
+    if ! echo "$d" | grep -Eq '^[A-Z][A-Z0-9]*-[0-9]+$'; then err "depends_on: '$d' must look like PROJ-141"
+    elif [ "$d" = "$id" ]; then err "depends_on: a tech spec cannot depend on itself"
+    else deps+=("$d"); fi
+  done
+  depends_on="$(IFS=','; echo "${deps[*]:-}")"
+fi
+
 # base (optional, default main)
 [ -z "$base" ] && base="main"
 
@@ -151,10 +167,10 @@ grep -q 'Concrete, testable statement' "$file" && err "body: still contains temp
 
 # --- Result -------------------------------------------------------------------
 if [ ${#errors[@]} -gt 0 ]; then
-  echo "Ticket $file is invalid:" >&2
+  echo "Tech spec $file is invalid:" >&2
   for e in "${errors[@]}"; do echo "  - $e" >&2; done
   exit 1
 fi
 
-printf 'id=%s\nrepo=%s\nbase=%s\nstack=%s\ntype=%s\nacceptance_criteria=%s\n' \
-  "$id" "$repo" "$base" "$stack" "$type" "$ac_count"
+printf 'id=%s\nrepo=%s\nbase=%s\nstack=%s\ntype=%s\nstory=%s\ndepends_on=%s\nacceptance_criteria=%s\n' \
+  "$id" "$repo" "$base" "$stack" "$type" "$story" "$depends_on" "$ac_count"

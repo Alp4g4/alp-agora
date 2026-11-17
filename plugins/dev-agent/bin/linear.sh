@@ -13,7 +13,7 @@
 #   (edit state_name() below if your team uses other names).
 #   A Linear state outside this list is printed as "other:<state name>".
 #
-# fetch mapping (see "From Linear" in validate-ticket.sh --help):
+# fetch mapping (see "From Linear" in validate-tech-spec.sh --help):
 #   id           ← issue identifier
 #   stack        ← every label "stack:<component>", joined into a list ("go, go-sql")
 #   type         ← label "type:bug", or a label "bug" inside a label group named "type"
@@ -135,12 +135,12 @@ cmd_fetch() {
   } > "$file"
   echo "Wrote $file"
 
+  # validate-tech-spec.sh comes from the specs plugin: on the PATH, or next to dev-agent in a marketplace clone
   local validator
-  validator="$(cd "$(dirname "$0")" && pwd)/validate-ticket.sh"
-  if [ -x "$validator" ]; then
-    "$validator" "$file" >/dev/null || die "fix the issue in Linear, then re-run with --force."
-    echo "Ticket is valid."
-  fi
+  validator="$(PATH="$PATH:$(cd "$(dirname "$0")" && pwd)/../../specs/bin" command -v validate-tech-spec.sh)" \
+    || die "validate-tech-spec.sh not found: install the specs plugin."
+  "$validator" "$file" >/dev/null || die "fix the issue in Linear, then re-run with --force."
+  echo "Ticket is valid."
 }
 
 cmd_comments() {

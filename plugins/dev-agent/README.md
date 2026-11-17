@@ -7,10 +7,14 @@ agents/senior-dev.md     the agent: dev-agent:senior-dev
 hooks/hooks.json         registers the guard on every Bash call
 hooks/guard-bash.sh      inside senior-dev only: blocks push to main/master, plain --force, gh pr merge
 bin/dev                  entry point: implement <file> | implement linear <ID> | review
-bin/setup-repo.sh        checks the repo, fetches, creates the ticket's worktree
+bin/setup-repo.sh        checks the repo, fetches, creates the worktree of branch <id lowercase>
 bin/linear.sh            Linear: fetch (issue → local ticket), comments, comment, status (needs LINEAR_API_KEY)
-bin/validate-ticket.sh   ticket format checker + format doc and example (--help)
+(validate-tech-spec.sh    comes from the specs plugin: format checker + format doc and example, --help)
 ```
+
+## What runs where
+
+`bin/dev implement` does everything a script can do, in order, before the agent starts: fetch the issue (Linear only), validate the ticket format, set up the worktree of the branch `<id lowercase>`, then start the agent inside that worktree with the ticket's metadata (`id`, `repo`, `base`, `stack`, `type`, `story`, `depends_on`, worktree state) in its first message. The agent never validates or sets up anything: it reads the content, judges it, and does the work. Without that metadata block it refuses to start.
 
 ## One-time setup
 
@@ -19,7 +23,11 @@ bin/validate-ticket.sh   ticket format checker + format doc and example (--help)
    ```
    /plugin install dev-agent --marketplace Alp4g4/alp-agora
    ```
-   Install the plugins of the stack too (`go`, and `web-design` for `go-ssr`): the agent loads their skills in Step 3.
+   Install the `specs` plugin too: it holds the tech spec format and its validator (`validate-tech-spec.sh`), which the agent and `bin/dev` call.
+   ```
+   /plugin install specs --marketplace Alp4g4/alp-agora
+   ```
+   Install the plugins of the stack too (`go`, and `web-design` for `go-ssr`): the agent loads their skills in Step 2.
 3. On GitHub, enable **branch protection** on `main`: require a PR and an approval. The hooks are only a guardrail.
 4. Add a `CLAUDE.md` to each target repo saying how to run, test and lint it, plus any project-specific conventions.
 
@@ -33,7 +41,7 @@ dev implement linear PROJ-142             # run from the target repo; downloads 
 dev review https://github.com/org/repo/pull/12   # run from the target repo
 ```
 
-Tickets live in the `tickets/` folder of each project. Format, the purpose of each field, and an example: `bin/validate-ticket.sh --help`. To check a ticket by hand: `bin/validate-ticket.sh tickets/PROJ-142.md`.
+Tickets live in the `tickets/` folder of each project. Format, the purpose of each field, and an example: `validate-tech-spec.sh --help`. To check a ticket by hand: `validate-tech-spec.sh tickets/PROJ-142.md`. The validator lives in `plugins/specs/bin/`; `bin/dev` finds it there in a marketplace clone, otherwise put it on your PATH.
 
 ## Linear
 
@@ -48,7 +56,7 @@ export LINEAR_API_KEY=lin_api_...   # e.g. in ~/.zshrc
 Linear conventions the fetch script expects:
 - one `stack:<component>` label per component the ticket needs: `stack:go`, plus `stack:go-sql` and `stack:go-ssr` when it touches them. Plain labels, not a label group: Linear allows only one label of a group per issue
 - a `type:feature` / `type:bug` / `type:refactor` / `type:chore` label
-- a `repo: <remote URL>` line in the description (optional `base: <branch>`); see "From Linear" in `bin/validate-ticket.sh --help`
+- a `repo: <remote URL>` line in the description (optional `base: <branch>`); see "From Linear" in `validate-tech-spec.sh --help`
 
 A Linear MCP server is not part of the plugin: the agent doesn't write back to Linear today.
 
