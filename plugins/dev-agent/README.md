@@ -29,6 +29,24 @@ The agent then does the rest, in order: validates the tech spec with `validate-t
    Install the plugins of the stack too (`go`, and `web-design` for `go-ssr`): the agent loads their skills in Step 2.
 3. On GitHub, enable **branch protection** on `main`: require a PR and an approval. The hooks are only a guardrail.
 4. Add a `CLAUDE.md` to each target repo saying how to run, test and lint it, plus any project-specific conventions.
+5. Add the agent's permissions to each target repo's `.claude/settings.json`. The agent runs non-interactively, so nobody can accept a permission prompt: a tool call that isn't allowed is denied. Start from the commands the agent runs, and add your stack's toolchain:
+   ```json
+   {
+     "permissions": {
+       "allow": [
+         "Edit", "Write",
+         "Bash(validate-tech-spec.sh:*)",
+         "Bash(git remote get-url:*)", "Bash(git branch --show-current)",
+         "Bash(git status:*)", "Bash(git log:*)", "Bash(git diff:*)",
+         "Bash(git add:*)", "Bash(git commit:*)", "Bash(git push:*)",
+         "Bash(gh repo view:*)", "Bash(gh pr view:*)", "Bash(gh pr create:*)", "Bash(gh api:*)",
+         "Bash(make check)",
+         "Bash(go test:*)", "Bash(go build:*)", "Bash(go vet:*)"
+       ]
+     }
+   }
+   ```
+   The guard hook still blocks pushing to `main`/`master`, plain force-push and `gh pr merge`, even when `git push` and `gh` are allowed.
 
 ## Run it
 
@@ -66,5 +84,5 @@ The agent never commits `PLAN.md` (where it writes its plan) or anything in `tec
 ## Tuning as trust grows
 
 - Remove the "Plan approval" paragraph in `senior-dev.md` to let it run end to end.
-- In non-interactive mode nobody can accept a permission prompt: a tool call that needs one is denied. Give the run the permissions it needs on the `claude` command (`--permission-mode acceptEdits` plus `--allowedTools` for `git`, `gh`, `make` and your toolchain, or the repo's `.claude/settings.json`). A `permissionMode` field in the agent's frontmatter would be ignored: plugin agents don't support it.
+- When a run ends in `failed` because a command was denied, add that command to the repo's `.claude/settings.json` (setup step 5). A `permissionMode` or tools list in the agent's frontmatter would not replace it: plugin agents ignore `permissionMode`.
 - Track the number of review rounds per PR. That's your quality metric.
