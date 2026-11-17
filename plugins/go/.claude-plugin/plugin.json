@@ -1,0 +1,10 @@
+{
+  "name": "go",
+  "description": "Go clean architecture (domain, use cases, ports, infrastructure, delivery, composition root), SQL schema, goose migrations and sqlc queries on PostgreSQL and SQLite, server-rendered pages with templ and htmx, and the definition of done of a Go change (a make check gate and its template)",
+  "author": { "name": "Alpaga" },
+  "version": "1.0.0",
+  "homepage": "https://github.com/Alp4g4/alp-agora",
+  "repository": "https://github.com/Alp4g4/alp-agora",
+  "license": "MIT",
+  "keywords": ["go", "golang", "clean-architecture", "hexagonal", "sql", "sqlc", "goose", "postgresql", "sqlite", "templ", "htmx", "definition-of-done"]
+}

@@ -1,0 +1,45 @@
+#!/bin/bash
+# Entry point for the senior-dev agent. The agent only ever works on a local ticket file.
+#   dev implement <tickets/PROJ-142.md>               (run from the project's clone)
+#   dev implement linear <PROJ-142> [--force]   (run from the project: fetches into ./tickets, then same as above)
+#   dev review <https://github.com/org/repo/pull/12>
+set -euo pipefail
+BIN="$(cd "$(dirname "$0")" && pwd)"
+export PATH="$BIN:$PATH"   # lets the agent call validate-ticket.sh, setup-repo.sh… by name (a plugin's bin/ does the same)
+
+usage() { sed -n '3,5p' "$0" | sed 's/^#  //' >&2; exit 2; }
+
+# Validate a local ticket and start the agent on it, in the current directory (the project's clone).
+implement_ticket() {
+  local ticket="$1"
+  [ -f "$ticket" ] || { echo "ticket not found: $ticket" >&2; exit 1; }
+  ticket="$(cd "$(dirname "$ticket")" && pwd)/$(basename "$ticket")"
+  "$BIN/validate-ticket.sh" "$ticket" >/dev/null             # exits on invalid ticket
+  echo "Ticket OK"
+  exec claude --agent dev-agent:senior-dev "implement $ticket"
+}
+
+case "${1:-}" in
+  implement)
+    case "${2:-}" in
+      "") usage ;;
+      linear)
+        id="${3:-}"; [ -z "$id" ] && usage
+        ticket="tickets/$id.md"
+        if [ -f "$ticket" ] && [ "${4:-}" != "--force" ]; then
+          echo "Using existing $ticket (add --force to re-download it from Linear)."
+        else
+          "$BIN/linear.sh" fetch "$id" --out tickets ${4:+--force}   # exits on fetch/validation error
+        fi
+        implement_ticket "$ticket"
+        ;;
+      *) implement_ticket "$2" ;;
+    esac
+    ;;
+  review)
+    url="${2:-}"; [ -z "$url" ] && usage
+    echo "$url" | grep -Eq '^https://github\.com/[^/]+/[^/]+/pull/[0-9]+' || { echo "not a GitHub PR URL: $url" >&2; exit 1; }
+    exec claude --agent dev-agent:senior-dev "review $url"
+    ;;
+  *) usage ;;
+esac

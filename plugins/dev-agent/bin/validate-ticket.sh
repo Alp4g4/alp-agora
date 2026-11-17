@@ -1,0 +1,160 @@
+#!/bin/bash
+# validate-ticket.sh: checks that a ticket file follows the format below.
+#
+# Usage:   validate-ticket.sh <tickets/PROJ-142.md>
+#          validate-ticket.sh --help
+# Success: exit 0, prints the metadata as key=value lines (id, repo, base, stack, type, acceptance_criteria).
+# Failure: exit 1, prints every error at once on stderr.
+#
+# ── Ticket format ─────────────────────────────────────────────────────────────
+# One markdown file per ticket, named <id>.md, in the tickets/ folder of the project.
+#
+#   ---
+#   id: PROJ-142              # required. Uppercase key + number, must equal the file name.
+#                             #   → branch (proj-142-…), commit prefix, PR title.
+#   repo: https://github.com/org/my-api   # required. URL of the remote git repository
+#                             #   (https://…, git@host:owner/name.git or ssh://…).
+#                             #   → the agent only works in a clone whose "origin" is this repository.
+#   base: main                # optional, default main. Checked against the remote by setup-repo.sh.
+#                             #   → branch to start from and target of the PR.
+#   stack: go, go-sql         # required. A comma-separated list of components:
+#                             #     go      Go clean architecture (always, for a Go project)
+#                             #     go-sql  the ticket touches the schema, a migration or a query
+#                             #     go-ssr  the ticket touches a server-rendered page
+#                             #   go-sql and go-ssr come with go.
+#                             #   → which skills and checks the agent uses (never guessed).
+#   type: bug                 # required. feature | bug | refactor | chore
+#                             #   → how the agent tests:
+#                             #     feature  each acceptance criterion gets a test (or a manual check in the PR)
+#                             #     bug      first a failing test that reproduces the bug, then the fix
+#                             #     refactor no behaviour change, existing tests pass unmodified
+#                             #     chore    no new tests required, all checks must pass
+#   ---
+#
+#   ## Context                # required, not empty. Why the work exists.
+#   The /healthz endpoint returns 500 when the DB is down; the load balancer
+#   then kills healthy pods.
+#
+#   ## Acceptance criteria    # required, at least one "- [ ]" item. The definition of done.
+#   - [ ] GET /healthz returns 200 {"status":"ok"} even when the DB is unreachable
+#   - [ ] Covered by a unit test on the HTTP handler
+#
+#   ## Technical notes        # optional. Constraints, files to touch, things to avoid.
+#   No new dependencies.
+#
+#   ## Out of scope           # optional, recommended. What the agent must NOT do.
+#   Readiness checks on the database.
+#
+# ── From Linear ───────────────────────────────────────────────────────────────
+#   id ← issue identifier      stack ← every label stack:<value>   type ← label type:<value>
+#   repo / base ← "repo: …" / "base: …" lines in the description
+#   sections ← the description's "##" sections, with the same headings
+# ──────────────────────────────────────────────────────────────────────────────
+
+set -u
+
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  sed -n '2,/^# ──────────────────────────────────────────────────────────────────────────────$/p' "$0" | sed 's/^# \{0,1\}//'
+  exit 0
+fi
+
+file="${1:-}"
+[ -z "$file" ] && { echo "usage: $0 <ticket.md>" >&2; exit 2; }
+[ -f "$file" ] || { echo "ticket not found: $file" >&2; exit 1; }
+
+errors=()
+err() { errors+=("$1"); }
+
+# --- Front matter -----------------------------------------------------------
+[ "$(head -n1 "$file")" = "---" ] || { echo "front matter missing: the file must start with a '---' line" >&2; exit 1; }
+fm=$(awk 'NR==1{next} /^---[[:space:]]*$/{exit} {print}' "$file")
+body=$(awk 'f>=2{print} /^---[[:space:]]*$/{f++}' "$file")
+
+id=""; repo=""; base=""; stack=""; type=""
+while IFS= read -r line; do
+  line="${line%%#*}"                                   # strip comments
+  line="$(echo "$line" | sed -E 's/[[:space:]]+$//')"
+  [ -z "$line" ] && continue
+  key="$(echo "$line" | sed -E 's/^([A-Za-z_]+):.*/\1/')"
+  val="$(echo "$line" | sed -E 's/^[A-Za-z_]+:[[:space:]]*//')"
+  case "$key" in
+    id) id="$val" ;; repo) repo="$val" ;; base) base="$val" ;;
+    stack) stack="$val" ;; type) type="$val" ;;
+    *) err "unknown field '$key' (allowed: id, repo, base, stack, type)" ;;
+  esac
+done <<< "$fm"
+
+# id
+if [ -z "$id" ]; then err "id: required"
+elif ! echo "$id" | grep -Eq '^[A-Z][A-Z0-9]*-[0-9]+$'; then err "id: '$id' must look like PROJ-142"
+elif [ "$(basename "$file" .md)" != "$id" ]; then err "id: '$id' does not match the file name '$(basename "$file")'"
+fi
+
+# stack: a comma-separated list of components, printed back as "go,go-sql"
+components=()
+if [ -z "$stack" ]; then
+  err "stack: required, a list of components (go, go-sql, go-ssr)"
+else
+  IFS=',' read -ra parts <<< "$stack"
+  for c in "${parts[@]}"; do
+    c="$(echo "$c" | tr -d '[:space:]')"
+    case "$c" in
+      go|go-sql|go-ssr)
+        case " ${components[*]:-} " in
+          *" $c "*) err "stack: '$c' is listed twice" ;;
+          *) components+=("$c") ;;
+        esac ;;
+      "") err "stack: '$stack' has an empty component" ;;
+      *)  err "stack: '$c' is unknown (go, go-sql, go-ssr)" ;;
+    esac
+  done
+  case " ${components[*]:-} " in
+    *" go-sql "* | *" go-ssr "*)
+      case " ${components[*]} " in *" go "*) ;; *) err "stack: go-sql and go-ssr come with go (stack: go, ${components[*]// /, })" ;; esac ;;
+  esac
+  stack="$(IFS=','; echo "${components[*]:-}")"
+fi
+
+# type
+case "$type" in
+  feature|bug|refactor|chore) ;;
+  "") err "type: required (feature | bug | refactor | chore)" ;;
+  *)  err "type: '$type' is unknown (feature | bug | refactor | chore)" ;;
+esac
+
+# base (optional, default main)
+[ -z "$base" ] && base="main"
+
+# repo: URL of the remote repository (the match with the local clone is checked by setup-repo.sh)
+if [ -z "$repo" ]; then err "repo: required (URL of the remote repository, e.g. https://github.com/org/my-api)"
+elif ! echo "$repo" | grep -Eq '^(https://[^/[:space:]]+/[^/[:space:]]+/[^/[:space:]]+/?|git@[^:[:space:]]+:[^/[:space:]]+/[^/[:space:]]+|ssh://([^@/]+@)?[^/[:space:]]+/[^/[:space:]]+/[^/[:space:]]+)$'; then
+  err "repo: '$repo' is not a repository URL (https://host/owner/name, git@host:owner/name.git or ssh://…)"
+fi
+
+# --- Body sections ------------------------------------------------------------
+section() { # prints the content of a "## <name>" section (case-insensitive)
+  echo "$body" | awk -v name="$1" '
+    tolower($0) ~ "^## +" tolower(name) "[[:space:]]*$" {on=1; next}
+    /^## / {on=0}
+    on {print}'
+}
+
+ctx="$(section "Context" | grep -Ev '^[[:space:]]*$')"
+[ -z "$ctx" ] && err "## Context: required and must not be empty"
+
+ac="$(section "Acceptance criteria")"
+ac_count=$(echo "$ac" | grep -Ec '^[[:space:]]*- \[[ xX]\] +[^[:space:]]')
+[ "$ac_count" -eq 0 ] && err "## Acceptance criteria: required, with at least one '- [ ] ...' item"
+
+# leftovers from the template
+grep -q 'Concrete, testable statement' "$file" && err "body: still contains template placeholder text"
+
+# --- Result -------------------------------------------------------------------
+if [ ${#errors[@]} -gt 0 ]; then
+  echo "Ticket $file is invalid:" >&2
+  for e in "${errors[@]}"; do echo "  - $e" >&2; done
+  exit 1
+fi
+
+printf 'id=%s\nrepo=%s\nbase=%s\nstack=%s\ntype=%s\nacceptance_criteria=%s\n' \
+  "$id" "$repo" "$base" "$stack" "$type" "$ac_count"

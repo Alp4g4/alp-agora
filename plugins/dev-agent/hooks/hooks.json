@@ -1,0 +1,16 @@
+{
+  "description": "Guard for the senior-dev agent: blocks pushing to main/master, plain force-push, and merging PRs",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/guard-bash.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

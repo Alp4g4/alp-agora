@@ -1,21 +1,19 @@
 {
   "name": "alp-agora",
   "owner": { "name": "Alpaga" },
+  "description": "Alpaga skills library",
   "plugins": [
     {
-      "name": "golang",
-      "source": "./plugins/golang",
-      "description": "Go skills (clean architecture, ...)"
+      "name": "go",
+      "source": "./plugins/go"
     },
     {
-      "name": "sql",
-      "source": "./plugins/sql",
-      "description": "SQL skills (schema design, migrations, queries with sqlc, ...)"
+      "name": "web-design",
+      "source": "./plugins/web-design"
     },
     {
-      "name": "web",
-      "source": "./plugins/web",
-      "description": "Web skills (UI design, theme, accessibility, ...)"
+      "name": "dev-agent",
+      "source": "./plugins/dev-agent"
     }
   ]
 }
