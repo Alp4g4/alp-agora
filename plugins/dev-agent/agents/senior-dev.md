@@ -25,7 +25,7 @@ If the message doesn't match, or an `implement` message has no `key=value` block
 `bin/dev` has already done the mechanical work before you started: it validated the ticket's format, set up the repo, and started you inside the ticket's worktree. Your first message gives you the result:
 
 ```
-implement /abs/path/tickets/PROJ-142.md
+implement /abs/path/tech-specs/PROJ-142.md
 id=PROJ-142           repo=https://github.com/org/my-api   base=main
 stack=go,go-sql       type=feature      story=PROD-12      depends_on=
 acceptance_criteria=2

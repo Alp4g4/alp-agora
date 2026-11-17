@@ -47,10 +47,6 @@
 #   ## Out of scope           # optional, recommended. What the agent must NOT do.
 #   Readiness checks on the database.
 #
-# ── From Linear ───────────────────────────────────────────────────────────────
-#   id ← issue identifier      stack ← every label stack:<value>   type ← label type:<value>
-#   repo / base ← "repo: …" / "base: …" lines in the description
-#   sections ← the description's "##" sections, with the same headings
 # ──────────────────────────────────────────────────────────────────────────────
 
 set -u

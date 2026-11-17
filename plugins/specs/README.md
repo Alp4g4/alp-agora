@@ -29,4 +29,4 @@ It is the same format as the former dev-agent ticket, plus two optional fields f
 
 ## Status
 
-`dev-agent` uses `validate-tech-spec.sh` from here (`bin/dev`, `linear.sh` and the `senior-dev` agent).
+`dev-agent` uses `validate-tech-spec.sh` from here (`bin/dev` and the `senior-dev` agent).

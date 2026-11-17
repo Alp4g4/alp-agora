@@ -1,14 +1,12 @@
 #!/bin/bash
 # Entry point for the senior-dev agent. Everything a script can do is done here, before the agent starts.
-#   dev implement <tickets/PROJ-142.md>         (run from the project's clone)
-#   dev implement linear <PROJ-142> [--force]   (run from the project: fetches into ./tickets, then same as above)
+#   dev implement <tech-specs/PROJ-142.md>   (run from the project's clone)
 #   dev review <https://github.com/org/repo/pull/12>
 #
 # implement, in order:
-#   1. linear only: download the issue as tickets/<ID>.md (an existing file is kept without --force)
-#   2. validate the ticket format (validate-tech-spec.sh) and read its metadata
-#   3. set up the repository: the worktree of the ticket's branch (setup-repo.sh)
-#   4. start the agent inside the worktree, with the metadata in its first message
+#   1. validate the ticket format (validate-tech-spec.sh) and read its metadata
+#   2. set up the repository: the worktree of the ticket's branch (setup-repo.sh)
+#   3. start the agent inside the worktree, with the metadata in its first message
 # The agent never validates the ticket or sets up the repo: it receives the result and reads the content.
 set -euo pipefail
 BIN="$(cd "$(dirname "$0")" && pwd)"
@@ -16,7 +14,7 @@ BIN="$(cd "$(dirname "$0")" && pwd)"
 # specs plugin: if it is not already on the PATH, use the one next to dev-agent in a marketplace clone.
 export PATH="$BIN:$BIN/../../specs/bin:$PATH"
 
-usage() { sed -n '3,5p' "$0" | sed 's/^#  //' >&2; exit 2; }
+usage() { sed -n '3,4p' "$0" | sed 's/^#  //' >&2; exit 2; }
 die() { echo "dev: $*" >&2; exit 1; }
 
 # Fields of the metadata and of the setup result. They come from a ticket, so they are read as data
@@ -38,18 +36,18 @@ implement_ticket() {
   [ -f "$ticket" ] || die "ticket not found: $ticket"
   ticket="$(cd "$(dirname "$ticket")" && pwd)/$(basename "$ticket")"
 
-  # 2. validate, read the metadata (the validator prints every error and exits on an invalid ticket)
+  # 1. validate, read the metadata (the validator prints every error and exits on an invalid ticket)
   command -v validate-tech-spec.sh >/dev/null || die "validate-tech-spec.sh not found: install the specs plugin (see plugins/dev-agent/README.md)"
   local meta; meta="$(validate-tech-spec.sh "$ticket")"
   read_fields <<< "$meta"
   echo "Ticket OK ($id)"
 
-  # 3. set up the repo (run from the project's clone: the script checks its origin)
+  # 2. set up the repo (run from the project's clone: the script checks its origin)
   local setup; setup="$(setup-repo.sh "$repo" "$base" "$id")"
   read_fields <<< "$setup"
   echo "Worktree $status: $worktree"
 
-  # 4. start the agent in the worktree: everything it needs to know is in the message
+  # 3. start the agent in the worktree: everything it needs to know is in the message
   local prompt
   prompt="implement $ticket
 id=$id
@@ -70,20 +68,8 @@ behind=$behind"
 
 case "${1:-}" in
   implement)
-    case "${2:-}" in
-      "") usage ;;
-      linear)
-        issue="${3:-}"; [ -z "$issue" ] && usage
-        ticket="tickets/$issue.md"
-        if [ -f "$ticket" ] && [ "${4:-}" != "--force" ]; then
-          echo "Using existing $ticket (add --force to re-download it from Linear)."
-        else
-          linear.sh fetch "$issue" --out tickets ${4:+--force}   # exits on fetch/validation error
-        fi
-        implement_ticket "$ticket"
-        ;;
-      *) implement_ticket "$2" ;;
-    esac
+    [ -z "${2:-}" ] && usage
+    implement_ticket "$2"
     ;;
   review)
     url="${2:-}"; [ -z "$url" ] && usage

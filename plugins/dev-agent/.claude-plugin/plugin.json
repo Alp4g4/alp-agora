@@ -1,10 +1,10 @@
 {
   "name": "dev-agent",
-  "description": "A senior-dev agent that implements one validated ticket (a local file or a Linear issue) in its own git worktree, following the skills and definition of done of the ticket's stack, opens a pull request for human review, and handles the review rounds. It never merges: a guard hook blocks pushing to main or master, plain force-push, and gh pr merge.",
+  "description": "A senior-dev agent that implements one validated markdown ticket in its own git worktree, following the skills and definition of done of the ticket's stack, opens a pull request for human review, and handles the review rounds. It never merges: a guard hook blocks pushing to main or master, plain force-push, and gh pr merge.",
   "author": { "name": "Alpaga" },
   "version": "1.0.0",
   "homepage": "https://github.com/Alp4g4/alp-agora",
   "repository": "https://github.com/Alp4g4/alp-agora",
   "license": "MIT",
-  "keywords": ["agent", "ticket", "pull-request", "code-review", "worktree", "linear"]
+  "keywords": ["agent", "ticket", "pull-request", "code-review", "worktree"]
 }
