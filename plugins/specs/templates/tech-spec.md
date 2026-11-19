@@ -2,8 +2,9 @@
 id: PROJ-142
 repo: https://github.com/org/my-api
 base: main
-stack: go
+stack: go, go-ssr
 type: feature
+depends_on: PROJ-141, PROJ-142
 ---
 
 ## Context

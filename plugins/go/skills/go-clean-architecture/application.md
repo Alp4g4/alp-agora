@@ -65,7 +65,7 @@ The application layer sits between the domain and the outside world. It describe
 internal/application/
 ├── ports/                       # 3. needed by several concepts: exported, one package per capability
 │   └── clock/clock.go           #    clock.Clock
-└── usecase/
+└── usecases/
     └── user/
         ├── ports.go             # 2. non-repository ports shared by the user use cases (passwordHasher, avatarStorer)
         ├── errors.go            #    application errors
