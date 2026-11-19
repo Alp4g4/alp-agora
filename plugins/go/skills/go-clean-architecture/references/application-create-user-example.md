@@ -1,6 +1,6 @@
 # Create User use case
 
-`internal/application/usecase/user/create_user.go`. Raw input (strings from the delivery layer) is turned into domain value objects at the start of `Execute`. After that, the flow trusts them: it never re-validates an `Email` or a `Password`.
+`internal/application/usecases/user/create_user.go`. Raw input (strings from the delivery layer) is turned into domain value objects at the start of `Execute`. After that, the flow trusts them: it never re-validates an `Email` or a `Password`.
 
 - [The ports](#the-ports)
 - [create_user.go](#create_usergo)

@@ -2,7 +2,7 @@
 
 `internal/infrastructure/system/clock.go`. `Clock` implements the exported level 3 port `clock.Clock` from `application/ports/clock`, using the machine's time.
 
-The port is exported, so this package can name it and check the contract at compile time. Unexported ports in `usecase` packages cannot be checked this way.
+The port is exported, so this package can name it and check the contract at compile time. Unexported ports in `usecases` packages cannot be checked this way.
 
 ## clock.go
 

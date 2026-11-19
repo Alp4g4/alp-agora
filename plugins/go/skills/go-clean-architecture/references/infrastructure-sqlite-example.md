@@ -119,7 +119,7 @@ import (
 	"fmt"
 	"uuid"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/domain/user"
 	"internal/infrastructure/sqlite/sqlcgen"
 )
@@ -214,7 +214,7 @@ import (
 
 	"github.com/pressly/goose/v3"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/domain/user"
 )
 

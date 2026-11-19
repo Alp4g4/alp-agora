@@ -1,6 +1,6 @@
 # Update User use case
 
-`internal/application/usecase/user/update_user.go`. It shows the rule about calling domain methods:
+`internal/application/usecases/user/update_user.go`. It shows the rule about calling domain methods:
 
 - **Email**: a business rule exists (a new email must be verified again), so the use case calls `u.ChangeEmail(email)` and never sets `u.Email` itself.
 - **Password hash and avatar key**: plain data with no rule, assigned directly.

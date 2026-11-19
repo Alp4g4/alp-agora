@@ -31,6 +31,6 @@ func (c fixedClock) Now() time.Time { return c.now }
 
 ## Why a package of its own
 
-- **Level 3**: the user and order use cases both need it, so it cannot live in `usecase/user/ports.go`.
+- **Level 3**: the user and order use cases both need it, so it cannot live in `usecases/user/ports.go`.
 - **One capability, one package**: `clock.Clock` says what it provides. A flat `ports` package would make every use case import every shared interface.
 - **Exported**: the use case packages must name it, and infrastructure checks its implementation at compile time (`var _ clock.Clock = (*Clock)(nil)`).

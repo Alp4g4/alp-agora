@@ -82,7 +82,7 @@ internal/
 ├── application/
 │   ├── ports/
 │   │   └── clock/clock.go          # a port shared by several concepts, one package per capability
-│   └── usecase/
+│   └── usecases/
 │       └── user/
 │           ├── errors.go           # application errors
 │           └── create_user.go      # CreateUserUC and its ports (createUserRepository)

@@ -125,7 +125,7 @@ import (
 	"log/slog"
 	"os"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/delivery/cli/admin"
 	"internal/infrastructure/bcrypthasher"
 	"internal/infrastructure/jsonfile"

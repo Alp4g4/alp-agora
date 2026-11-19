@@ -270,7 +270,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/delivery/web/views"
 	"internal/domain/user"
 )
@@ -352,7 +352,7 @@ import (
 	"strings"
 	"testing"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/domain/user"
 )
 

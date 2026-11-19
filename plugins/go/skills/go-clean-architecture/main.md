@@ -128,7 +128,7 @@ A CLI differs in `Run(ctx, args) int` instead of `Run(ctx) error`, and in its lo
 8. **Group the use cases in a `UseCases` struct** declared in `app.go`, with one exported field per use case. `NewApp` fills it once. Each delivery adapter receives only the use cases it calls (`NewUserHandler(useCases.CreateUser, useCases.UpdateUser)`), never the whole struct.
 9. **Wire by hand.** Consider a tool only when the wiring is too large to read: `wire` (compile-time code generation) before `fx` or `dig` (runtime, reflection).
 10. **Start and stop are explicit.** `main` creates a context cancelled by `SIGINT` and `SIGTERM` (`signal.NotifyContext`). `app.Run(ctx)` starts every delivery adapter, blocks until the context is cancelled or an adapter fails, then shuts the adapters down gracefully with a timeout from the config. `app.Close()` then releases the infrastructure.
-11. **This is where the ports are checked.** Ports in `usecase` packages are unexported, so the compiler verifies that each infrastructure type satisfies them when `NewApp` passes it to a use case constructor.
+11. **This is where the ports are checked.** Ports in `usecases` packages are unexported, so the compiler verifies that each infrastructure type satisfies them when `NewApp` passes it to a use case constructor.
 12. **Do not factor out wiring too early.** Duplicate the wiring between two binaries until a second binary needs the same part, then extract that part into a package named after what it builds.
 13. **Test the root.** Test `NewApp` with a test configuration and the real wiring, and `App.Run` by cancelling its context. A wiring mistake should fail in a test, not in production.
 

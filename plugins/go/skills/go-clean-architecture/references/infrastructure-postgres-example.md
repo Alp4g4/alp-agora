@@ -136,7 +136,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/domain/user"
 	"internal/infrastructure/postgres/sqlcgen"
 )
@@ -232,7 +232,7 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	tcpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/domain/user"
 )
 

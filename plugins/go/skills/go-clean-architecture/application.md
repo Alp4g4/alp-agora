@@ -74,7 +74,7 @@ internal/application/
 ```
 
 1. **In the use case file**: its repository port, always, and any other port only this use case calls. Unexported.
-2. **In `usecase/<concept>/ports.go`**: a non-repository port that several use cases of the same concept call. Go forbids two declarations of the same name in one package, so it is declared once here. Unexported. A repository port never moves here.
+2. **In `usecases/<concept>/ports.go`**: a non-repository port that several use cases of the same concept call. Go forbids two declarations of the same name in one package, so it is declared once here. Unexported. A repository port never moves here.
 3. **In `application/ports/<capability>/`**: a port that several concepts need, in a package named after what it provides (`clock`). Exported, since other packages must name it.
 
 Start at level 1. Move a port to level 2 when a second use case of the concept calls it, and to level 3 when a second concept does.

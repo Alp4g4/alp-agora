@@ -1,6 +1,6 @@
 # Application User: shared ports and errors
 
-Package `user` (`internal/application/usecase/user`). Two files shared by the user use cases: the non-repository ports that several of them call (level 2), and the application errors.
+Package `user` (`internal/application/usecases/user`). Two files shared by the user use cases: the non-repository ports that several of them call (level 2), and the application errors.
 
 The domain package `internal/domain/user` is imported without an alias: a package's own name is not an identifier in its files, so `user.User` and `user.ParseEmail` refer to the domain even inside `package user`.
 

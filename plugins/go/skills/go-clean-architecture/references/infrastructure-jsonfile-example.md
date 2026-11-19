@@ -59,7 +59,7 @@ import (
 	"sync"
 	"uuid"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/domain/user"
 )
 

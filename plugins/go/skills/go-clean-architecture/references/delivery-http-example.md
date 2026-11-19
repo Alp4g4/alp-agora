@@ -151,7 +151,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/domain/user"
 )
 
@@ -201,7 +201,7 @@ import (
 	"net/http"
 	"uuid"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/domain/user"
 )
 
@@ -294,7 +294,7 @@ import (
 	"time"
 	"uuid"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/domain/user"
 )
 

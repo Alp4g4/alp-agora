@@ -107,7 +107,7 @@ package admin
 import (
 	"context"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/domain/user"
 )
 
@@ -158,7 +158,7 @@ import (
 	"context"
 	"uuid"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/domain/user"
 )
 
@@ -295,7 +295,7 @@ import (
 	"flag"
 	"fmt"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/domain/user"
 )
 
@@ -355,7 +355,7 @@ import (
 	"strings"
 	"testing"
 
-	usecaseuser "internal/application/usecase/user"
+	usecaseuser "internal/application/usecases/user"
 	"internal/domain/user"
 )
 
