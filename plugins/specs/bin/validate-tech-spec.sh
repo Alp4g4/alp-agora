@@ -3,7 +3,7 @@
 #
 # Usage:   validate-tech-spec.sh <tech-specs/PROJ-142.md>
 #          validate-tech-spec.sh --help
-# Success: exit 0, prints the metadata as key=value lines (id, url, base, stack, type, story, depends_on, acceptance_criteria).
+# Success: exit 0, prints the metadata as key=value lines (id, project_name, url, base, stack, type, story, depends_on, acceptance_criteria).
 # Failure: exit 1, prints every error at once on stderr.
 #
 # ── Tech spec format ─────────────────────────────────────────────────────────────
@@ -13,7 +13,7 @@
 #   id: PROJ-142              # required. Uppercase key + number, must equal the file name.
 #                             #   → the branch name must contain it (proj-142, feat/PROJ-142-…),
 #                             #     commit prefix, PR title.
-#   project_name: my-api
+#   project_name: my-api      # required, free text. Name of the project the tech spec belongs to.
 #   url: https://github.com/org/my-api   # required. URL of the remote git repository
 #                             #   (https://…, git@host:owner/name.git or ssh://…).
 #                             #   → the agent only works in a clone whose "origin" is this repository.
@@ -70,7 +70,7 @@ err() { errors+=("$1"); }
 fm=$(awk 'NR==1{next} /^---[[:space:]]*$/{exit} {print}' "$file")
 body=$(awk 'f>=2{print} /^---[[:space:]]*$/{f++}' "$file")
 
-id=""; url=""; base=""; stack=""; type=""; story=""; depends_on=""
+id=""; project_name=""; url=""; base=""; stack=""; type=""; story=""; depends_on=""
 while IFS= read -r line; do
   line="${line%%#*}"                                   # strip comments
   line="$(echo "$line" | sed -E 's/[[:space:]]+$//')"
@@ -78,10 +78,10 @@ while IFS= read -r line; do
   key="$(echo "$line" | sed -E 's/^([A-Za-z_]+):.*/\1/')"
   val="$(echo "$line" | sed -E 's/^[A-Za-z_]+:[[:space:]]*//')"
   case "$key" in
-    id) id="$val" ;; url) url="$val" ;; base) base="$val" ;;
+    id) id="$val" ;; project_name) project_name="$val" ;; url) url="$val" ;; base) base="$val" ;;
     stack) stack="$val" ;; type) type="$val" ;;
     story) story="$val" ;; depends_on) depends_on="$val" ;;
-    *) err "unknown field '$key' (allowed: id, url, base, stack, type, story, depends_on)" ;;
+    *) err "unknown field '$key' (allowed: id, project_name, url, base, stack, type, story, depends_on)" ;;
   esac
 done <<< "$fm"
 
@@ -90,6 +90,9 @@ if [ -z "$id" ]; then err "id: required"
 elif ! echo "$id" | grep -Eq '^[A-Z][A-Z0-9]*-[0-9]+$'; then err "id: '$id' must look like PROJ-142"
 elif [ "$(basename "$file" .md)" != "$id" ]; then err "id: '$id' does not match the file name '$(basename "$file")'"
 fi
+
+# project_name: required, any text
+[ -z "$project_name" ] && err "project_name: required (name of the project)"
 
 # stack: a comma-separated list of components, printed back as "go,go-sql"
 components=()
@@ -170,5 +173,5 @@ if [ ${#errors[@]} -gt 0 ]; then
   exit 1
 fi
 
-printf 'id=%s\url=%s\nbase=%s\nstack=%s\ntype=%s\nstory=%s\ndepends_on=%s\nacceptance_criteria=%s\n' \
-  "$id" "$url" "$base" "$stack" "$type" "$story" "$depends_on" "$ac_count"
+printf 'id=%s\nproject_name=%s\nurl=%s\nbase=%s\nstack=%s\ntype=%s\nstory=%s\ndepends_on=%s\nacceptance_criteria=%s\n' \
+  "$id" "$project_name" "$url" "$base" "$stack" "$type" "$story" "$depends_on" "$ac_count"

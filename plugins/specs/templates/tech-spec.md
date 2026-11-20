@@ -5,7 +5,7 @@ url: git@github.com:org/my-api.git
 base: main
 stack: go, go-ssr
 type: feature
-depends_on: PROJ-141, PROJ-142
+depends_on: PROJ-141
 ---
 
 ## Context

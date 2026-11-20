@@ -64,7 +64,8 @@ Never end a run without this object, and never ask a question anywhere else: nob
    On success it prints the metadata as `key=value` lines:
    ```
    id=FND-111
-   repo=https://github.com/org/my-api
+   project_name=my-api
+   url=https://github.com/org/my-api
    base=main
    stack=go,go-sql
    type=feature
@@ -74,7 +75,8 @@ Never end a run without this object, and never ask a question anywhere else: nob
    ```
    These values are the reference for the whole job. Always use them, never ones you inferred from the text:
    - `id` for commits and the PR title,
-   - `repo` and `base` for where the PR goes,
+   - `url` and `base` for where the PR goes,
+   - `project_name` is the name of the project, for information only,
    - `stack` for the skills (Step 2),
    - `type` for how you test,
    - `story` is where the tech spec comes from, if any,
@@ -84,7 +86,7 @@ Never end a run without this object, and never ask a question anywhere else: nob
    ```sh
    git remote get-url origin && git branch --show-current
    ```
-   - `origin` must be the tech spec's `repo`. Compare host, owner and name only: `https://github.com/org/my-api`, `git@github.com:org/my-api.git` and `ssh://git@github.com/org/my-api` are the same repository.
+   - `origin` must be the tech spec's `url`. Compare host, owner and name only: `https://github.com/org/my-api`, `git@github.com:org/my-api.git` and `ssh://git@github.com/org/my-api` are the same repository.
    - The current branch must contain the `id`, case-insensitive and not followed by a digit: `fnd-111` and `feat/FND-111-healthz` are fine for `FND-111`, `main` and `fnd-1110` are not.
 
    If either check fails, end with `failed`: say in `error` which repository and branch you found, and which ones the tech spec expects. Don't fix it yourself.

@@ -13,7 +13,7 @@ hooks/guard-bash.sh      inside senior-dev only: blocks push to main/master, pla
 
 You prepare the repository: the right clone, up to date, checked out on the tech spec's branch. The branch name must contain the tech spec's `id` (`fnd-111`, `feat/FND-111-healthz`).
 
-The agent then does the rest, in order: validates the tech spec with `validate-tech-spec.sh` and reads its metadata (`id`, `repo`, `base`, `stack`, `type`, `story`, `depends_on`), checks that `origin` is the spec's `repo` and that the current branch contains its `id`, reads the whole file, and does the work. If the spec is invalid or the repository or branch is wrong, it stops and tells you. It never clones, switches branches or rebases.
+The agent then does the rest, in order: validates the tech spec with `validate-tech-spec.sh` and reads its metadata (`id`, `project_name`, `url`, `base`, `stack`, `type`, `story`, `depends_on`), checks that `origin` is the spec's `url` and that the current branch contains its `id`, reads the whole file, and does the work. If the spec is invalid or the repository or branch is wrong, it stops and tells you. It never clones, switches branches or rebases.
 
 ## One-time setup
 
