@@ -1,6 +1,7 @@
 ---
 id: PROJ-142
-repo: https://github.com/org/my-api
+project_name: my-api
+url: git@github.com:org/my-api.git
 base: main
 stack: go, go-ssr
 type: feature

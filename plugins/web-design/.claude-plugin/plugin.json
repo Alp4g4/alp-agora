@@ -2,7 +2,6 @@
   "name": "web-design",
   "description": "UI and UX rules for web interfaces built with Tailwind CSS: a theme of design tokens with light and dark values, a shared component catalog, accessible forms, contrast, keyboard navigation and responsive layouts",
   "author": { "name": "Alpaga" },
-  "version": "1.0.0",
   "homepage": "https://github.com/Alp4g4/alp-agora",
   "repository": "https://github.com/Alp4g4/alp-agora",
   "license": "MIT",

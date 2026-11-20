@@ -3,7 +3,7 @@
 #
 # Usage:   validate-tech-spec.sh <tech-specs/PROJ-142.md>
 #          validate-tech-spec.sh --help
-# Success: exit 0, prints the metadata as key=value lines (id, repo, base, stack, type, story, depends_on, acceptance_criteria).
+# Success: exit 0, prints the metadata as key=value lines (id, url, base, stack, type, story, depends_on, acceptance_criteria).
 # Failure: exit 1, prints every error at once on stderr.
 #
 # ── Tech spec format ─────────────────────────────────────────────────────────────
@@ -13,7 +13,8 @@
 #   id: PROJ-142              # required. Uppercase key + number, must equal the file name.
 #                             #   → the branch name must contain it (proj-142, feat/PROJ-142-…),
 #                             #     commit prefix, PR title.
-#   repo: https://github.com/org/my-api   # required. URL of the remote git repository
+#   project_name: my-api
+#   url: https://github.com/org/my-api   # required. URL of the remote git repository
 #                             #   (https://…, git@host:owner/name.git or ssh://…).
 #                             #   → the agent only works in a clone whose "origin" is this repository.
 #   base: main                # optional, default main.
@@ -69,7 +70,7 @@ err() { errors+=("$1"); }
 fm=$(awk 'NR==1{next} /^---[[:space:]]*$/{exit} {print}' "$file")
 body=$(awk 'f>=2{print} /^---[[:space:]]*$/{f++}' "$file")
 
-id=""; repo=""; base=""; stack=""; type=""; story=""; depends_on=""
+id=""; url=""; base=""; stack=""; type=""; story=""; depends_on=""
 while IFS= read -r line; do
   line="${line%%#*}"                                   # strip comments
   line="$(echo "$line" | sed -E 's/[[:space:]]+$//')"
@@ -77,10 +78,10 @@ while IFS= read -r line; do
   key="$(echo "$line" | sed -E 's/^([A-Za-z_]+):.*/\1/')"
   val="$(echo "$line" | sed -E 's/^[A-Za-z_]+:[[:space:]]*//')"
   case "$key" in
-    id) id="$val" ;; repo) repo="$val" ;; base) base="$val" ;;
+    id) id="$val" ;; url) url="$val" ;; base) base="$val" ;;
     stack) stack="$val" ;; type) type="$val" ;;
     story) story="$val" ;; depends_on) depends_on="$val" ;;
-    *) err "unknown field '$key' (allowed: id, repo, base, stack, type, story, depends_on)" ;;
+    *) err "unknown field '$key' (allowed: id, url, base, stack, type, story, depends_on)" ;;
   esac
 done <<< "$fm"
 
@@ -138,10 +139,10 @@ fi
 # base (optional, default main)
 [ -z "$base" ] && base="main"
 
-# repo: URL of the remote repository (the match with the local clone is checked by the senior-dev agent)
-if [ -z "$repo" ]; then err "repo: required (URL of the remote repository, e.g. https://github.com/org/my-api)"
-elif ! echo "$repo" | grep -Eq '^(https://[^/[:space:]]+/[^/[:space:]]+/[^/[:space:]]+/?|git@[^:[:space:]]+:[^/[:space:]]+/[^/[:space:]]+|ssh://([^@/]+@)?[^/[:space:]]+/[^/[:space:]]+/[^/[:space:]]+)$'; then
-  err "repo: '$repo' is not a repository URL (https://host/owner/name, git@host:owner/name.git or ssh://…)"
+# url: URL of the remote repository (the match with the local clone is checked by the senior-dev agent)
+if [ -z "$url" ]; then err "url: required (URL of the remote repository, e.g. https://github.com/org/my-api)"
+elif ! echo "$url" | grep -Eq '^(https://[^/[:space:]]+/[^/[:space:]]+/[^/[:space:]]+/?|git@[^:[:space:]]+:[^/[:space:]]+/[^/[:space:]]+|ssh://([^@/]+@)?[^/[:space:]]+/[^/[:space:]]+/[^/[:space:]]+)$'; then
+  err "url: '$url' is not a repository URL (https://host/owner/name, git@host:owner/name.git or ssh://…)"
 fi
 
 # --- Body sections ------------------------------------------------------------
@@ -169,5 +170,5 @@ if [ ${#errors[@]} -gt 0 ]; then
   exit 1
 fi
 
-printf 'id=%s\nrepo=%s\nbase=%s\nstack=%s\ntype=%s\nstory=%s\ndepends_on=%s\nacceptance_criteria=%s\n' \
-  "$id" "$repo" "$base" "$stack" "$type" "$story" "$depends_on" "$ac_count"
+printf 'id=%s\url=%s\nbase=%s\nstack=%s\ntype=%s\nstory=%s\ndepends_on=%s\nacceptance_criteria=%s\n' \
+  "$id" "$url" "$base" "$stack" "$type" "$story" "$depends_on" "$ac_count"
