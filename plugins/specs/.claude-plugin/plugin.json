@@ -1,9 +1,0 @@
-{
-  "name": "specs",
-  "description": "The shared formats of the Alpaga agents: the tech spec template, its validator (validate-tech-spec.sh) and spec-template, which prints the template. Producer and consumer agents call the same commands, so a format change lives in one place.",
-  "author": { "name": "Alpaga" },
-  "homepage": "https://github.com/Alp4g4/alp-agora",
-  "repository": "https://github.com/Alp4g4/alp-agora",
-  "license": "MIT",
-  "keywords": ["spec", "tech-spec", "product-spec", "template", "validation"]
-}
