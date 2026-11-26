@@ -14,10 +14,6 @@
     {
       "name": "dev-agent",
       "source": "./plugins/dev-agent"
-    },
-    {
-      "name": "specs",
-      "source": "./plugins/specs"
     }
   ]
 }
